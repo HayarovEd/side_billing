@@ -4,10 +4,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.stereotype.Component
 
 @Component
-class HashEncoder(
-    private val bcrypt: BCryptPasswordEncoder
-) {
-    fun encode(message: String): String? = bcrypt.encode(message)
+class HashEncoder {
+    private val bcrypt = BCryptPasswordEncoder()
 
-    fun decode(message: String, hashed: String): Boolean = bcrypt.matches(message, hashed)
+    fun encode(password: String): String? = bcrypt.encode(password)
+
+    fun decode(password: String, hashed: String): Boolean = bcrypt.matches(password, hashed)
 }
