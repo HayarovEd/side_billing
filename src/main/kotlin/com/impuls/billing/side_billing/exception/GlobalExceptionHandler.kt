@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
-    @org.springframework.web.bind.annotation.ExceptionHandler(MeteoException::class)
-    fun handleMeteoException(ex: MeteoException): ResponseEntity<MutableMap<String, String>> {
+    @org.springframework.web.bind.annotation.ExceptionHandler(BillingException::class)
+    fun handleBillingException(ex: BillingException): ResponseEntity<MutableMap<String, String>> {
         val error: MutableMap<String, String> = HashMap()
         error["message"] = ex.localizedMessage.toString()
 
