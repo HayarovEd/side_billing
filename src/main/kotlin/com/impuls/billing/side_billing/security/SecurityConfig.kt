@@ -1,18 +1,16 @@
 package com.impuls.billing.side_billing.security
 
-import jakarta.servlet.DispatcherType
+import jakarta.servlet.http.HttpServletResponse
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
-import org.springframework.http.HttpStatus
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.HttpStatusEntryPoint
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
+@EnableWebSecurity
 class SecurityConfig(
     private val jwtAuthFilter: JwtAuthFilter
 ) {
@@ -23,13 +21,10 @@ class SecurityConfig(
             .sessionManagement { it.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
             .authorizeHttpRequests { auth ->
                 auth
-                    .requestMatchers("/")
-                    .permitAll()
-                    .requestMatchers("/auth/**")
-                    .permitAll()
-                    .dispatcherTypeMatchers(
-                        DispatcherType.ERROR,
-                        DispatcherType.FORWARD
+                    // Публичные эндпоинты (без авторизации)
+                    .requestMatchers(
+                        "/",           // Ваш эндпоинт
+                        "/auth/**",    // Все эндпоинты аутентификации
                     )
                     .permitAll()
                     .anyRequest()
@@ -37,14 +32,27 @@ class SecurityConfig(
             }
             .exceptionHandling { configurer ->
                 configurer
-                    .authenticationEntryPoint(HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+                    .authenticationEntryPoint { request, response, authException ->
+                        println("=== AuthenticationEntryPoint ===")
+                        println("Path: ${request.servletPath}")
+                        println("Method: ${request.method}")
+                        println("Auth Exception: ${authException.message}")
+                        println("Authorization header: ${request.getHeader("Authorization")}")
+
+                        response.status = HttpServletResponse.SC_UNAUTHORIZED
+                        response.contentType = "application/json"
+                        response.writer.write("""{"error": "Unauthorized: ${authException.message}"}""")
+                    }
+            }
+            .securityContext { securityContext ->
+                securityContext.requireExplicitSave(false)  // Автоматически сохранять контекст
             }
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
             .build()
     }
 
-  /*  @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }*/
+    /*  @Bean
+      fun passwordEncoder(): PasswordEncoder {
+          return BCryptPasswordEncoder()
+      }*/
 }

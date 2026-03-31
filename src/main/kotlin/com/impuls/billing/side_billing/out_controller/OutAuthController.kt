@@ -2,16 +2,13 @@ package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.out_dto.TokenDto
 import com.impuls.billing.side_billing.repository.AuthService
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/auth")
 class OutAuthController(
-    private val authService: AuthService
+    private val authService: AuthService,
 ) {
     data class AuthRequest(
         val name: String,
@@ -35,6 +32,8 @@ class OutAuthController(
             password = body.password
         )
     }
+
+
 
     /* @PostMapping("/refresh")
      fun refresh(

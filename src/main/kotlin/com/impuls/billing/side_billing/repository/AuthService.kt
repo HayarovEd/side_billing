@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
+import com.impuls.billing.side_billing.in_controller.InternalBillingService
 import com.impuls.billing.side_billing.model.entity.Token
 import com.impuls.billing.side_billing.model.out_dto.TokenDto
 import com.impuls.billing.side_billing.security.JwtService
