@@ -2,10 +2,10 @@ package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
-import com.impuls.billing.side_billing.model.out_dto.Account
-import com.impuls.billing.side_billing.model.out_dto.Agreement
-import com.impuls.billing.side_billing.model.out_dto.ClientAccount
-import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.Account
+import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 
 
 fun GetClientAccountResponse.toClientAccount(): ClientAccount {

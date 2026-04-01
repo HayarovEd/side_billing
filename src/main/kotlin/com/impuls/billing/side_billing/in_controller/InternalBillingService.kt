@@ -1,11 +1,11 @@
 package com.impuls.billing.side_billing.in_controller
 
-import com.impuls.billing.side_billing.model.out_dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.utils.toClientAccount
 import com.impuls.billing.side_billing.utils.toRecoverPassword
 import com.impuls.billing.side_billing.model.in_dto.SessionBilling
-import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 import com.impuls.billing.side_billing.utils.SoapParser
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -112,6 +112,35 @@ class InternalBillingService(
         )
     }
 
+    fun updatePasswordByCode(
+        login: String,
+        password: String,
+        acceptCode: String,
+    ): Mono<Int> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:updatePasswordByCode>\n" +
+                            "<val>\n" +
+                            "<login>$login</login>\n" +
+                            "<password>$password</password>\n" +
+                            "<acceptcode>$acceptCode</acceptcode>\n" +
+                            "</val>\n" +
+                            "</urn:updatePasswordByCode>\n"
+                )
+            )
+        }
+        return handler(
+            soapRequest = soapRequest,
+            sessionId = "",
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
     private fun <T : Any> handler(
         soapRequest: String,
         sessionId: String,
@@ -124,9 +153,14 @@ class InternalBillingService(
             .retrieve()
             .toEntity(String::class.java)
             .mapNotNull { response ->
+                println(response)
                 bodyFunction(response)
             }
+            .doOnError {
+                println(it)
+            }
             .onErrorResume(WebClientResponseException::class.java) { ex ->
+                println(ex)
                 val faultString = SoapParser.parseFaultString(ex.responseBodyAsString)
                 if (faultString?.contains("Invalid login", ignoreCase = true) == true) {
                     // Ошибка аутентификации → 401

@@ -1,4 +1,4 @@
-package com.impuls.billing.side_billing.model.out_dto
+package com.impuls.billing.side_billing.model.out_dto.dto
 
 
 data class TokenDto(

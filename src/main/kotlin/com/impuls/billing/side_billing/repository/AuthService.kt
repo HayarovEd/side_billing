@@ -3,8 +3,8 @@ package com.impuls.billing.side_billing.repository
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.InternalBillingService
 import com.impuls.billing.side_billing.model.entity.Token
-import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
-import com.impuls.billing.side_billing.model.out_dto.TokenDto
+import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
 import com.impuls.billing.side_billing.security.JwtService
 import com.impuls.billing.side_billing.service.AuthRepository
 import com.impuls.billing.side_billing.utils.monoMapper
@@ -62,6 +62,28 @@ class AuthService(
                 simpleRecover = simpleRecover,
                 operId = operId,
             )
+        })
+    }
+
+    fun updatePasswordByCode(
+        login: String,
+        password: String,
+        acceptCode: String,
+    ): Mono<Boolean> {
+        return monoMapper({
+            val result = internalBillingService.updatePasswordByCode(
+                login = login,
+                password = password,
+                acceptCode = acceptCode
+            )
+            result.map { header ->
+                when (header) {
+                    null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
+                    else -> {
+                        header == 1
+                    }
+                }
+            }
         })
     }
 }
