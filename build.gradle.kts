@@ -47,6 +47,10 @@ dependencies {
 
 
 	implementation("org.springframework.boot:spring-boot-webclient:4.0.5")
+
+
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 }
 
 kotlin {

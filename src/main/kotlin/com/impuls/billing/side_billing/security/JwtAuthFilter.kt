@@ -22,7 +22,11 @@ class JwtAuthFilter(
         val path = request.servletPath
 
         // Пропускаем публичные пути
-        if (path.startsWith("/auth")) {
+        if (path.startsWith("/auth") ||
+            path.startsWith("/swagger-ui") ||
+            path.startsWith("/v3/api-docs") ||
+            path.startsWith("/swagger-resources") ||
+            path.startsWith("/webjars")) {
             println("Публичный путь: $path, пропускаем")
             filterChain.doFilter(request, response)
             return
