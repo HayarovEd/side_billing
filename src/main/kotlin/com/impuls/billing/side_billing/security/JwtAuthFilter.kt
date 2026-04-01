@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.security
 
+import com.impuls.billing.side_billing.utils.BEARER_PREF
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse

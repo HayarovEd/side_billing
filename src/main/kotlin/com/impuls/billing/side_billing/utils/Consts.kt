@@ -1,4 +1,4 @@
-package com.impuls.billing.side_billing.security
+package com.impuls.billing.side_billing.utils
 
 const val BEARER_PREF = "Bearer "
 

@@ -1,5 +1,8 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
 import com.impuls.billing.side_billing.model.out_dto.TokenDto
 import com.impuls.billing.side_billing.repository.AuthService
 import org.springframework.web.bind.annotation.*
@@ -15,6 +18,20 @@ class OutAuthController(
         val password: String
     )
 
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    data class RecoverPasswordRequest(
+        val transport: Int,
+        val login: String,
+        val sync: Boolean? = false,
+        val simpleRecover: Boolean? = false,
+        val operId: Int? = 0,
+    ) {
+        fun getSync(): Boolean = sync ?: false
+        fun getSimpleRecover(): Boolean = simpleRecover ?: false
+        fun getOperId(): Int = operId ?: 0
+    }
 
     /* @PostMapping("/register")
      fun register(
@@ -35,10 +52,16 @@ class OutAuthController(
 
 
 
-    /* @PostMapping("/refresh")
+     @PostMapping("/recoverPassword")
      fun refresh(
-         @RequestBody body: RefreshRequest
-     ): AuthService.TokenPair {
-         return authService.refresh(body.refreshToken)
-     }*/
+         @RequestBody body: RecoverPasswordRequest
+     ): Mono<RecoverPassword> {
+         return authService.recoverPassword(
+             transport = body.transport,
+             login = body.login,
+             sync = body.getSync(),
+             simpleRecover = body.getSimpleRecover(),
+             operId = body.getOperId(),
+         )
+     }
 }

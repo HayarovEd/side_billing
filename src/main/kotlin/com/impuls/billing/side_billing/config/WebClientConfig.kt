@@ -1,6 +1,6 @@
 package com.impuls.billing.side_billing.config
 
-import com.impuls.billing.side_billing.security.BASE_INNER_URL
+import com.impuls.billing.side_billing.utils.BASE_INNER_URL
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders

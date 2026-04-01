@@ -3,9 +3,11 @@ package com.impuls.billing.side_billing.repository
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.InternalBillingService
 import com.impuls.billing.side_billing.model.entity.Token
+import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
 import com.impuls.billing.side_billing.model.out_dto.TokenDto
 import com.impuls.billing.side_billing.security.JwtService
 import com.impuls.billing.side_billing.service.AuthRepository
+import com.impuls.billing.side_billing.utils.monoMapper
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -43,5 +45,23 @@ class AuthService(
                 }
             }
         }
+    }
+
+    fun recoverPassword(
+        transport: Int,
+        login: String,
+        sync: Boolean,
+        simpleRecover: Boolean,
+        operId: Int,
+    ): Mono<RecoverPassword> {
+        return monoMapper({
+            internalBillingService.recoverPassword(
+                transport = transport,
+                login = login,
+                sync = sync,
+                simpleRecover = simpleRecover,
+                operId = operId,
+            )
+        })
     }
 }

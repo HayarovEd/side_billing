@@ -1,6 +1,6 @@
-package com.impuls.billing.side_billing.in_controller
+package com.impuls.billing.side_billing.utils
 
-
+import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.AccountDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.AgreementDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.ClientAccountDataDto
@@ -11,9 +11,8 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
-import kotlin.text.toIntOrNull
 
-class SoapParser {
+object SoapParser {
 
     fun parseFullSoapResponse(xmlString: String): GetClientAccountResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
@@ -218,9 +217,42 @@ class SoapParser {
     }
 
 
+    fun parseToRecoverPassword(xmlString: String): RecoverPasswordResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()!!
+        return RecoverPasswordResponse(
+            recordId = retElement.select("recordid").text().toIntOrNull() ?: 0,
+            destination = retElement.select("destination").text(),
+        )
+    }
+
+
     fun parseSetClientInfoResponse(xmlString: String): Int {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret").first()
-        return retElement?.text()?.toIntOrNull()?:-1
+        return retElement?.text()?.toIntOrNull() ?: -1
+    }
+
+
+    fun parseLoginResponse(xml: String?): Long? {
+        val uidRegex = Regex("<uid>(\\d+)</uid>")
+        return xml?.let {
+            uidRegex.find(it)?.groupValues?.get(1)?.toLongOrNull()
+        }
+    }
+
+    fun parseFaultString(xml: String?): String? {
+        val regex = Regex("<faultstring>(.*?)</faultstring>", RegexOption.DOT_MATCHES_ALL)
+        return xml?.let { regex.find(it)?.groupValues?.get(1) }
+    }
+
+    fun setBaseAppend(innerContent: String): String {
+        return "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" \n" +
+                "xmlns:urn=\"urn:api3\">\n" +
+                "   <soapenv:Header/>\n" +
+                "   <soapenv:Body>\n" +
+                innerContent +
+                "   </soapenv:Body>\n" +
+                "</soapenv:Envelope>".trimIndent()
     }
 }

@@ -1,9 +1,11 @@
-package com.impuls.billing.side_billing.mapper
+package com.impuls.billing.side_billing.utils
 
+import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.out_dto.Account
 import com.impuls.billing.side_billing.model.out_dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.RecoverPassword
 
 
 fun GetClientAccountResponse.toClientAccount(): ClientAccount {
@@ -81,6 +83,13 @@ fun GetClientAccountResponse.toClientAccount(): ClientAccount {
                 code = it.code
             )
         }
+    )
+}
+
+fun RecoverPasswordResponse.toRecoverPassword(): RecoverPassword {
+    return RecoverPassword(
+        recordId = recordId,
+        destination = destination,
     )
 }
 
