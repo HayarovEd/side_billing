@@ -1,9 +1,10 @@
 package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
-import com.impuls.billing.side_billing.in_controller.InternalBillingService
+import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.entity.Token
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.ResultDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
 import com.impuls.billing.side_billing.security.JwtService
 import com.impuls.billing.side_billing.service.AuthRepository
@@ -15,7 +16,7 @@ import reactor.core.publisher.Mono
 @Service
 class AuthService(
     private val jwtService: JwtService,
-    private val internalBillingService: InternalBillingService,
+    private val authBillingService: AuthBillingService,
     private val authRepository: AuthRepository,
 ) {
 
@@ -23,7 +24,7 @@ class AuthService(
         username: String,
         password: String
     ): Mono<TokenDto> {
-        val result = internalBillingService.onLogin(
+        val result = authBillingService.onLogin(
             username = username,
             password = password
         )
@@ -55,7 +56,7 @@ class AuthService(
         operId: Int,
     ): Mono<RecoverPassword> {
         return monoMapper({
-            internalBillingService.recoverPassword(
+            authBillingService.recoverPassword(
                 transport = transport,
                 login = login,
                 sync = sync,
@@ -69,9 +70,9 @@ class AuthService(
         login: String,
         password: String,
         acceptCode: String,
-    ): Mono<Boolean> {
+    ): Mono<ResultDto> {
         return monoMapper({
-            val result = internalBillingService.updatePasswordByCode(
+            val result = authBillingService.updatePasswordByCode(
                 login = login,
                 password = password,
                 acceptCode = acceptCode
@@ -80,7 +81,7 @@ class AuthService(
                 when (header) {
                     null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                     else -> {
-                        header == 1
+                        ResultDto(header == 1)
                     }
                 }
             }

@@ -1,22 +1,20 @@
 package com.impuls.billing.side_billing.in_controller
 
-import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.exception.BillingException
-import com.impuls.billing.side_billing.utils.toClientAccount
-import com.impuls.billing.side_billing.utils.toRecoverPassword
 import com.impuls.billing.side_billing.model.in_dto.SessionBilling
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 import com.impuls.billing.side_billing.utils.SoapParser
+import com.impuls.billing.side_billing.utils.handler
+import com.impuls.billing.side_billing.utils.toClientAccount
+import com.impuls.billing.side_billing.utils.toRecoverPassword
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
-import org.springframework.web.reactive.function.client.WebClientResponseException
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Mono
 
 @Service
-class InternalBillingService(
+class AuthBillingService(
     private val webClient: WebClient,
 ) {
 
@@ -42,7 +40,7 @@ class InternalBillingService(
             """.trimIndent()
             )
         }
-        return handler(
+        return webClient.handler(
             soapRequest = soapRequest,
             sessionId = "",
             bodyFunction = { response ->
@@ -69,7 +67,7 @@ class InternalBillingService(
                 )
             )
         }
-        return handler(
+        return webClient.handler(
             soapRequest = soapRequest,
             sessionId = sessionId,
             bodyFunction = { response ->
@@ -101,7 +99,7 @@ class InternalBillingService(
                 )
             )
         }
-        return handler(
+        return webClient.handler(
             soapRequest = soapRequest,
             sessionId = "",
             bodyFunction = { response ->
@@ -130,7 +128,7 @@ class InternalBillingService(
                 )
             )
         }
-        return handler(
+        return webClient.handler(
             soapRequest = soapRequest,
             sessionId = "",
             bodyFunction = { response ->
@@ -141,37 +139,5 @@ class InternalBillingService(
         )
     }
 
-    private fun <T : Any> handler(
-        soapRequest: String,
-        sessionId: String,
-        bodyFunction: (ResponseEntity<String>) -> T?
-    ): Mono<T> {
-        return webClient
-            .post()
-            .bodyValue(soapRequest)
-            .header("Set-Cookie", sessionId)
-            .retrieve()
-            .toEntity(String::class.java)
-            .mapNotNull { response ->
-                println(response)
-                bodyFunction(response)
-            }
-            .doOnError {
-                println(it)
-            }
-            .onErrorResume(WebClientResponseException::class.java) { ex ->
-                println(ex)
-                val faultString = SoapParser.parseFaultString(ex.responseBodyAsString)
-                if (faultString?.contains("Invalid login", ignoreCase = true) == true) {
-                    // Ошибка аутентификации → 401
-                    Mono.error(BillingException(faultString, HttpStatus.UNAUTHORIZED))
-                } else if (!faultString.isNullOrBlank()) {
-                    Mono.error(BillingException(faultString, HttpStatus.BAD_REQUEST))
-                    //E-mail for user '$1' is not confirmed
-                } else {
-                    Mono.error(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Billing service error", ex))
-                }
-            }
-    }
 
 }

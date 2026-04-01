@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.ResultDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
 import com.impuls.billing.side_billing.model.out_dto.request.AuthRequest
 import com.impuls.billing.side_billing.model.out_dto.request.PasswordByCodeRequest
@@ -42,7 +43,7 @@ class OutAuthController(
     @PostMapping("/updatePasswordByCode")
     fun updatePasswordByCode(
         @RequestBody body: PasswordByCodeRequest
-    ): Mono<Boolean> {
+    ): Mono<ResultDto> {
         return authService.updatePasswordByCode(
             login = body.login,
             password = body.password,
