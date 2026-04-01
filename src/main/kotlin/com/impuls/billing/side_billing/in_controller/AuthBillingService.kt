@@ -114,7 +114,7 @@ class AuthBillingService(
         login: String,
         password: String,
         acceptCode: String,
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(

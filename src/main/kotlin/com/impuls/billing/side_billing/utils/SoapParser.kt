@@ -227,10 +227,10 @@ object SoapParser {
     }
 
 
-    fun parseSetClientInfoResponse(xmlString: String): Int {
+    fun parseSetClientInfoResponse(xmlString: String): Long {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret").first()
-        return retElement?.text()?.toIntOrNull() ?: -1
+        return retElement?.text()?.toLongOrNull() ?: -1L
     }
 
 

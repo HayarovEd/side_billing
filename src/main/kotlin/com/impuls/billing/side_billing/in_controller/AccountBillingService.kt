@@ -12,10 +12,10 @@ class AccountBillingService(
 ) {
 
     fun setClientMobilePhone(
-        uid: Int,
+        uid: Long,
         phone: String,
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
@@ -40,10 +40,10 @@ class AccountBillingService(
     }
 
     fun setClientEmail(
-        uid: Int,
+        uid: Long,
         email: String,
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
@@ -69,7 +69,7 @@ class AccountBillingService(
 
     fun validateClientMobileNumber(
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
@@ -90,7 +90,7 @@ class AccountBillingService(
 
     fun validateClientEmail(
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
@@ -110,10 +110,10 @@ class AccountBillingService(
     }
 
     fun confirmValidateClientMobileNumber(
-        id: Int,
+        id: Long,
         code: String,
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
@@ -136,10 +136,10 @@ class AccountBillingService(
     }
 
     fun confirmValidateClientEmail(
-        id: Int,
+        id: Long,
         code: String,
         sessionId: String
-    ): Mono<Int> {
+    ): Mono<Long> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
