@@ -33,7 +33,7 @@ class PaymentController(
     @GetMapping("/promisePayment")
     fun getClientPromisePayments(
         @RequestHeader("Authorization") authHeader: String,
-    ): Mono<PromisePaymentDto> {
+    ): Mono<List<PromisePaymentDto>> {
         return paymentService.getClientPromisePayments(
             authHeader = authHeader
         )

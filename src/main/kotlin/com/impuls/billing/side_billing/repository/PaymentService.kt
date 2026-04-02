@@ -43,7 +43,7 @@ class PaymentService(
 
     fun getClientPromisePayments(
         authHeader: String
-    ): Mono<PromisePaymentDto> {
+    ): Mono<List<PromisePaymentDto>> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
             monoMapper({

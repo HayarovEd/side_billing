@@ -1,6 +1,5 @@
 package com.impuls.billing.side_billing.in_controller
 
-import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
@@ -43,12 +42,12 @@ class PaymentBillingService(
 
     fun getClientPromisePayments(
         sessionId: String
-    ): Mono<PromisePaymentDto> {
+    ): Mono<List<PromisePaymentDto>> {
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
-                    " <urn:getPromisePayments>\n" +
-                            "      </urn:getPromisePayments>\n"
+                    " <urn:getClientPromisePayments>\n" +
+                            "      </urn:getClientPromisePayments>\n"
                 )
             )
         }
@@ -57,7 +56,10 @@ class PaymentBillingService(
             sessionId = sessionId,
             bodyFunction = { response ->
                 response.body?.let { body ->
-                    SoapParser.parseToPromisePayment(body).toPromisePaymentResponse()
+                    println(body)
+                    SoapParser.parseToPromisePayment(body).map {
+                        it.toPromisePaymentResponse()
+                    }
                 }
             }
         )

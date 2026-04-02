@@ -329,28 +329,31 @@ object SoapParser {
         )
     }
 
-    fun parseToPromisePayment(xmlString: String): PromisePaymentResponse {
+    fun parseToPromisePayment(xmlString: String): List<PromisePaymentResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
-        val retElement = doc.select("ret").first()!!
-        return PromisePaymentResponse(
-            recordId = retElement.select("recordid").text().toLongOrNull() ?: 0L,
-            agrmId = retElement.select("agrmid").text().toLongOrNull() ?: 0L,
-            payId = retElement.select("payid").text().toLongOrNull() ?: 0L,
-            currId = retElement.select("currid").text().toLongOrNull() ?: 0L,
-            debt = retElement.select("debt").text().toDoubleOrNull() ?: 0.0,
-            amount = retElement.select("amount").text().toDoubleOrNull() ?: 0.0,
-            promiseDate = retElement.select("promdate").text() ?: "",
-            promiseTill = retElement.select("promtill").text() ?: "",
-            symbol = retElement.select("symbol").text() ?: "",
-            username = retElement.select("username").text() ?: "",
-            agrmNum = retElement.select("agrmnum").text() ?: "",
-            status = retElement.select("status").text().toIntOrNull() ?: 0,
-            modPerson = retElement.select("modperson").text().toLongOrNull() ?: 0L,
-            cancelPerson = retElement.select("cancelperson").text().toLongOrNull() ?: 0L,
-            modFio = retElement.select("modfio").text() ?: "",
-            cancelFio = retElement.select("cancelfio").text() ?: "",
-            fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
-        )
+        val elements = doc.select("ret")
+        return elements.map { retElement->
+            PromisePaymentResponse(
+                recordId = retElement.select("recordid").text().toLongOrNull() ?: 0L,
+                agrmId = retElement.select("agrmid").text().toLongOrNull() ?: 0L,
+                payId = retElement.select("payid").text().toLongOrNull() ?: 0L,
+                currId = retElement.select("currid").text().toLongOrNull() ?: 0L,
+                debt = retElement.select("debt").text().toDoubleOrNull() ?: 0.0,
+                amount = retElement.select("amount").text().toDoubleOrNull() ?: 0.0,
+                promiseDate = retElement.select("promdate").text() ?: "",
+                promiseTill = retElement.select("promtill").text() ?: "",
+                symbol = retElement.select("symbol").text() ?: "",
+                username = retElement.select("username").text() ?: "",
+                agrmNum = retElement.select("agrmnum").text() ?: "",
+                status = retElement.select("status").text().toIntOrNull() ?: 0,
+                modPerson = retElement.select("modperson").text().toLongOrNull() ?: 0L,
+                cancelPerson = retElement.select("cancelperson").text().toLongOrNull() ?: 0L,
+                modFio = retElement.select("modfio").text() ?: "",
+                cancelFio = retElement.select("cancelfio").text() ?: "",
+                fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
+            )
+        }
+
     }
 
 
