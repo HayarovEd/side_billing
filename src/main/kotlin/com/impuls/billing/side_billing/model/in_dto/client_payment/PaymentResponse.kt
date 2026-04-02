@@ -3,10 +3,11 @@ package com.impuls.billing.side_billing.model.in_dto.client_payment
 data class PaymentResponse(
     val recordId: Long,//		Идентификатор платежа в БД
     val parentRecordId: Long,//		Идентификатор родительской записи
+    val agrmId: String,
     val modPerson: Long,//		Идентификатор менеджера, который провел или изменил платёж
     val currId: Long,//		Идентификатор валюты из справочника валют
     val orderId: Long,//		Идентификатор счёта. Если платёж проводился без привязки к документу — 0		Не используется с версии 2.0.48
-    val orderIds: Long,//		Список оплачиваемых счетов(id)	2.0.48
+    //val orderIds: Long,//		Список оплачиваемых счетов(id)	2.0.48
     val status: Long,//		Статуса: 0 — проведен, 1 — проведен при загрузке файла сверки, 2 — аннулирован
     val classId: Long,//		Идентификатор категории платежа
     val amount: Double, //		Величина платежа в валюте договора
@@ -14,9 +15,9 @@ data class PaymentResponse(
     val revNo: Long,//		Номер ревизии платежа
     val revisions: Long,//		Количество корректировок платежа. Если платёж только что создан — 1
     val cashCode: Long,//		Код платежа: 1 — наличный, 2 — безналичный, 3 — продажа без чека, 4 — возврат без чека
-    val organizationId: Long,//		Идентификатор организации	2.0.48
-    val orgpaymentId: Long,//		Идентификатор платежа внутри организации	2.0.48
-    val organizationName: String,//		Название организации	2.0.48
+    //val organizationId: Long,//		Идентификатор организации	2.0.48
+    //val orgpaymentId: Long,//		Идентификатор платежа внутри организации	2.0.48
+   // val organizationName: String,//		Название организации	2.0.48
     val className: String,//		Название категории платежа
     val payDate: String,//		Дата и время проведения платежа в формате: ГГГГ-ММ-ДД ЧЧ:ММ:СС
     val localDate: String,//		Дата и время проведения платежа по времени сервера, на котором установлен биллинг
@@ -27,5 +28,5 @@ data class PaymentResponse(
     val uuid: String,//		Идентификатор платежа для интеграции с внешними системами
     val fromAgrmNumber: String,//		Номер договора, с которого был переведен платёж. Если платёж не участвовал в переводе — пусто
     val paymentOrderNumber: String,//		Номер платёжного поручения (не путать с «платёжным документом»)
-    val uprs: UprsPaymentResponse, //		Информация о платёжной системе
+   // val uprs: UprsPaymentResponse, //		Информация о платёжной системе
 )

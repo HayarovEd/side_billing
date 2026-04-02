@@ -3,11 +3,16 @@ package com.impuls.billing.side_billing.utils
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
+import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
+import com.impuls.billing.side_billing.model.out_dto.dto.Payment
+import com.impuls.billing.side_billing.model.out_dto.dto.PaymentOrder
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.UprsPayment
 
 
 fun GetClientAccountResponse.toClientAccount(): ClientAccount {
@@ -117,5 +122,55 @@ fun PromisePaymentResponse.toPromisePaymentResponse(): PromisePaymentDto {
         fee = fee,
     )
 }
+
+
+fun ClientPaymentsFullResponse.toClientPayments(): List<ClientPayment> {
+    return ret.map { rt->
+        ClientPayment(
+            pay = Payment(
+                recordId = rt.pay.recordId,
+                parentRecordId = rt.pay.parentRecordId,
+                modPerson = rt.pay.modPerson,
+                currId = rt.pay.currId,
+                orderId = rt.pay.orderId,
+                status = rt.pay.status,
+                classId = rt.pay.classId,
+                amount = rt.pay.amount,
+                fromAgrmId = rt.pay.fromAgrmId,
+                revNo = rt.pay.revNo,
+                revisions = rt.pay.revisions,
+                cashCode = rt.pay.cashCode,
+                className = rt.pay.className,
+                payDate = rt.pay.payDate,
+                localDate = rt.pay.localDate,
+                cancelDate = rt.pay.cancelDate,
+                periodDate = rt.pay.periodDate,
+                receipt = rt.pay.receipt,
+                comment = rt.pay.comment,
+                uuid = rt.pay.uuid,
+                fromAgrmNumber = rt.pay.fromAgrmNumber,
+                paymentOrderNumber = rt.pay.paymentOrderNumber,
+            ),
+            bsoDoc = rt.bsoDoc,
+            timestamp = rt.timestamp,
+            localtimestamp = rt.localtimestamp,
+            amountCurr = rt.amountCurr,
+            orderNum = rt.orderNum,
+            uid = rt.uid,
+            operId = rt.operId,
+            cardNumber = rt.cardNumber,
+            currSymb = rt.currSymb,
+            uname = rt.uname,
+            agrm = rt.agrm,
+            mgr = rt.mgr,
+            mgrDescr = rt.mgrDescr,
+            mgrLogin = rt.mgrLogin,
+            operName = rt.operName,
+            login = rt.login,
+            isEps = rt.isEps,
+        )
+    }
+}
+
 
 

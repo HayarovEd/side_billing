@@ -7,7 +7,7 @@ data class ClientPaymentResponse(
     val localtimestamp: Long,//        Дата совершения или изменения платежа по часам сервера, на котором установлен LBcore
     val amountCurr: Double, //        Сумма платежа в валюте договора
     val orderNum: String,//        Номер счёта, по которому производилась оплата. 0 — если платёж не является оплатой счета        Не используется с версии 2.0.48
-    val orders: List<PaymentOrderIdNameResponse>, //        Список оплачиваемых счетов(id-номер)    2.0.48
+   // val orders: List<PaymentOrderIdNameResponse>, //        Список оплачиваемых счетов(id-номер)    2.0.48
     val uid: Long,//        Идентификатор абонента, которому принадлежит платёж
     val operId: Long,//        Идентификатор оператора связи, который зарегистрировал платёж
     val cardNumber: Long,//        Номер карты оплаты

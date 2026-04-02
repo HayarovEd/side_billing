@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
@@ -38,4 +40,20 @@ class PaymentController(
             authHeader = authHeader
         )
     }
+
+    @GetMapping("/payment")
+    fun getClientPayments(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "agrmnum", defaultValue = "", required = false) agrmNum: String,
+        @RequestParam(name = "dtto", defaultValue = "", required = false) dateTo: String,
+        @RequestParam(name = "dtfrom", defaultValue = "", required = false) dateFrom: String,
+    ): Mono<List<ClientPayment>> {
+        return paymentService.getClientPayments(
+            authHeader = authHeader,
+            agrmNum = agrmNum,
+            dateTo = dateTo,
+            dateFrom = dateFrom
+        )
+    }
+
 }

@@ -35,7 +35,6 @@ object SoapParser {
                 localtimestamp = element.select("localtimestamp").text().toLongOrNull() ?: 0L,
                 amountCurr = element.select("amountcurr").text().toDoubleOrNull() ?: 0.0,
                 orderNum = element.select("ordernum").text() ?: "",
-                orders = parseSoapPaymentOrderIdName(element.select("orders")),
                 uid = element.select("uid").text().toLongOrNull() ?: 0L,
                 operId = element.select("operid").text().toLongOrNull() ?: 0L,
                 cardNumber = element.select("cardnumber").text().toLongOrNull() ?: 0L,
@@ -65,10 +64,10 @@ object SoapParser {
         return PaymentResponse(
             recordId = element.select("recordid").text().toLongOrNull() ?: 0L,
             parentRecordId = element.select("parentrecordid").text().toLongOrNull() ?: 0L,
+            agrmId = element.select("agrmid").text()?:"",
             modPerson = element.select("modperson").text().toLongOrNull() ?: 0L,
             currId = element.select("currid").text().toLongOrNull() ?: 0L,
             orderId = element.select("orderid").text().toLongOrNull() ?: 0L,
-            orderIds = element.select("orderids").text().toLongOrNull() ?: 0L,
             status = element.select("status").text().toLongOrNull() ?: 0L,
             classId = element.select("classid").text().toLongOrNull() ?: 0L,
             amount = element.select("amount").text().toDoubleOrNull() ?: 0.0,
@@ -76,9 +75,6 @@ object SoapParser {
             revNo = element.select("revno").text().toLongOrNull() ?: 0L,
             revisions = element.select("revisions").text().toLongOrNull() ?: 0L,
             cashCode = element.select("cashcode").text().toLongOrNull() ?: 0L,
-            organizationId = element.select("organizationid").text().toLongOrNull() ?: 0L,
-            orgpaymentId = element.select("orgpaymentid").text().toLongOrNull() ?: 0L,
-            organizationName = element.select("organizationname").text()?:"",
             className = element.select("classname").text()?:"",
             payDate = element.select("paydate").text()?:"",
             localDate = element.select("localdate").text()?:"",
@@ -89,7 +85,6 @@ object SoapParser {
             uuid = element.select("uuid").text()?:"",
             fromAgrmNumber = element.select("fromagrmnumber").text()?:"",
             paymentOrderNumber = element.select("paymentordernumber").text()?:"",
-            uprs = parseSoapUprsPayment(element.select("uprs").first()!!),
         )
     }
 

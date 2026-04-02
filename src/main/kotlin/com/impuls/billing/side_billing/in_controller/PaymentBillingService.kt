@@ -1,8 +1,10 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
+import com.impuls.billing.side_billing.utils.toClientPayments
 import com.impuls.billing.side_billing.utils.toPromisePaymentResponse
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -60,6 +62,35 @@ class PaymentBillingService(
                     SoapParser.parseToPromisePayment(body).map {
                         it.toPromisePaymentResponse()
                     }
+                }
+            }
+        )
+    }
+
+    fun getClientPayments(
+        sessionId: String,
+        agrmNum: String, //agrmnum
+        dateTo: String, //dtto
+        dateFrom: String, //dtfrom
+    ): Mono<List<ClientPayment>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientPayments>\n" +
+                            "<agrmnum>$agrmNum</agrmnum>\n" +
+                            "<dtto>$dateTo</dtto>\n" +
+                            "<dtfrom>$dateFrom</dtfrom>\n" +
+                    "</urn:getClientPayments>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseFullSoapPaymentsResponse(body).toClientPayments()
                 }
             }
         )
