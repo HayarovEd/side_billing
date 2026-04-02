@@ -18,7 +18,7 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/account")
-class OutAccountController(
+class AccountController(
     private val accountService: AccountService
 ) {
 

@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/auth")
-class OutAuthController(
+class AuthController(
     private val authService: AuthService,
 ) {
 
@@ -28,7 +28,7 @@ class OutAuthController(
 
 
     @PostMapping("/recoverPassword")
-    fun refresh(
+    fun recoverPassword(
         @RequestBody body: RecoverPasswordRequest
     ): Mono<RecoverPassword> {
         return authService.recoverPassword(
