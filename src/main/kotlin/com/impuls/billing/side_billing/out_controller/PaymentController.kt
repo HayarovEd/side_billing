@@ -1,8 +1,10 @@
 package com.impuls.billing.side_billing.out_controller
 
-import com.impuls.billing.side_billing.model.in_dto.PromisePaymentRequest
+import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
+import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.repository.PaymentService
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -16,7 +18,7 @@ class PaymentController(
     private val paymentService: PaymentService
 ) {
 
-    @PostMapping("/clientPromisePayment")
+    @PostMapping("/promisePayment")
     fun addClientPromisePayment(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: PromisePaymentRequest
@@ -25,6 +27,15 @@ class PaymentController(
             authHeader = authHeader,
             agreementId = body.agreementId,
             sum = body.sum,
+        )
+    }
+
+    @GetMapping("/promisePayment")
+    fun getClientPromisePayments(
+        @RequestHeader("Authorization") authHeader: String,
+    ): Mono<PromisePaymentDto> {
+        return paymentService.getClientPromisePayments(
+            authHeader = authHeader
         )
     }
 }

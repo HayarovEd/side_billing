@@ -172,4 +172,19 @@ class AccountService(
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
+
+    @Transactional
+    fun logout(
+        authHeader: String,
+    ): Mono<ResultSuccessDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            accountBillingService.logout(sessionId = session.sessionId)
+                .map { header ->
+                    tokenService.deleteSession(session) // Синхронное удаление
+                    ResultSuccessDto(header == 1L)
+                }
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
 }

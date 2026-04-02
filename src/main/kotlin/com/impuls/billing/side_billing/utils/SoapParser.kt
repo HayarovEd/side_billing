@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.utils
 
+import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.AccountDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.AgreementDto
@@ -7,12 +8,114 @@ import com.impuls.billing.side_billing.model.in_dto.client_account.ClientAccount
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.UserGroupDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.UserGroupsDto
+import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentResponse
+import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
+import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentOrderIdNameResponse
+import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentResponse
+import com.impuls.billing.side_billing.model.in_dto.client_payment.UprsPaymentResponse
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseFullSoapPaymentsResponse(xmlString: String): ClientPaymentsFullResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        return ClientPaymentsFullResponse(parseRetPayments(retElement))
+    }
+
+    private fun parseRetPayments(elements: List<Element>): List<ClientPaymentResponse> {
+        return elements.map { element ->
+            ClientPaymentResponse(
+                pay = parseSoapPayment(element.select("pay").first()!!),
+                bsoDoc = element.select("bsodoc").text().toLongOrNull() ?: 0L,
+                timestamp = element.select("timestamp").text().toLongOrNull() ?: 0L,
+                localtimestamp = element.select("localtimestamp").text().toLongOrNull() ?: 0L,
+                amountCurr = element.select("amountcurr").text().toDoubleOrNull() ?: 0.0,
+                orderNum = element.select("ordernum").text() ?: "",
+                orders = parseSoapPaymentOrderIdName(element.select("orders")),
+                uid = element.select("uid").text().toLongOrNull() ?: 0L,
+                operId = element.select("operid").text().toLongOrNull() ?: 0L,
+                cardNumber = element.select("cardnumber").text().toLongOrNull() ?: 0L,
+                currSymb = element.select("currsymb").text() ?: "",
+                uname = element.select("uname").text() ?: "",
+                agrm = element.select("agrm").text() ?: "",
+                mgr = element.select("mgr").text() ?: "",
+                mgrDescr = element.select("mgrdescr").text() ?: "",
+                mgrLogin = element.select("mgrlogin").text() ?: "",
+                operName = element.select("opername").text() ?: "",
+                login = element.select("login").text() ?: "",
+                isEps = element.select("iseps").text().toBoolean(),
+            )
+        }
+    }
+
+    fun parseSoapPaymentOrderIdName(elements: List<Element>): List<PaymentOrderIdNameResponse> {
+        return elements.map { element ->
+            PaymentOrderIdNameResponse(
+                orderId = element.select("orderid").text().toLongOrNull() ?: 0L,
+                orderNum = element.select("ordernum").text()?:"",
+            )
+        }
+    }
+
+    private fun parseSoapPayment(element: Element): PaymentResponse {
+        return PaymentResponse(
+            recordId = element.select("recordid").text().toLongOrNull() ?: 0L,
+            parentRecordId = element.select("parentrecordid").text().toLongOrNull() ?: 0L,
+            modPerson = element.select("modperson").text().toLongOrNull() ?: 0L,
+            currId = element.select("currid").text().toLongOrNull() ?: 0L,
+            orderId = element.select("orderid").text().toLongOrNull() ?: 0L,
+            orderIds = element.select("orderids").text().toLongOrNull() ?: 0L,
+            status = element.select("status").text().toLongOrNull() ?: 0L,
+            classId = element.select("classid").text().toLongOrNull() ?: 0L,
+            amount = element.select("amount").text().toDoubleOrNull() ?: 0.0,
+            fromAgrmId = element.select("fromagrmid").text().toLongOrNull() ?: 0L,
+            revNo = element.select("revno").text().toLongOrNull() ?: 0L,
+            revisions = element.select("revisions").text().toLongOrNull() ?: 0L,
+            cashCode = element.select("cashcode").text().toLongOrNull() ?: 0L,
+            organizationId = element.select("organizationid").text().toLongOrNull() ?: 0L,
+            orgpaymentId = element.select("orgpaymentid").text().toLongOrNull() ?: 0L,
+            organizationName = element.select("organizationname").text()?:"",
+            className = element.select("classname").text()?:"",
+            payDate = element.select("paydate").text()?:"",
+            localDate = element.select("localdate").text()?:"",
+            cancelDate = element.select("canceldate").text()?:"",
+            periodDate = element.select("perioddate").text()?:"",
+            receipt = element.select("receipt").text()?:"",
+            comment = element.select("comment").text()?:"",
+            uuid = element.select("uuid").text()?:"",
+            fromAgrmNumber = element.select("fromagrmnumber").text()?:"",
+            paymentOrderNumber = element.select("paymentordernumber").text()?:"",
+            uprs = parseSoapUprsPayment(element.select("uprs").first()!!),
+        )
+    }
+
+    private fun parseSoapUprsPayment(element: Element): UprsPaymentResponse {
+        return UprsPaymentResponse(
+            uprsCurrency = element.select("uprscurrency").text()?:"",
+            paymentDate = element.select("paymentdate").text()?:"",
+            agentAcceptedDate = element.select("agentaccepteddate").text()?:"",
+            acceptedDate = element.select("accepteddate").text()?:"",
+            agentOperationId = element.select("agentoperationid").text().toLongOrNull() ?: 0L,
+            paymentToolType = element.select("paymenttooltype").text().toLongOrNull() ?: 0L,
+            paymentToolNumber = element.select("paymenttoolnumber").text()?:"",
+            checkNumber = element.select("checknumber").text().toLongOrNull() ?: 0L,
+            terminalNumber = element.select("terminalnumber").text()?:"",
+            agentSystemCode = element.select("agentsystemcode").text()?:"",
+            agentName = element.select("agentname").text()?:"",
+            subscriberId = element.select("subscriberid").text()?:"",
+            terminalId = element.select("terminalid").text()?:"",
+            terminalAddress = element.select("terminaladdress").text()?:"",
+            payerBankAccount = element.select("payerbankaccount").text()?:"",
+            payerBankName = element.select("payerbankname").text()?:"",
+            payerBik = element.select("payerbik").text()?:"",
+            payerBankAddress = element.select("payerbankaddress").text()?:"",
+            more = element.select("more").text()?:"",
+        )
+    }
 
     fun parseFullSoapResponse(xmlString: String): GetClientAccountResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
@@ -223,6 +326,30 @@ object SoapParser {
         return RecoverPasswordResponse(
             recordId = retElement.select("recordid").text().toIntOrNull() ?: 0,
             destination = retElement.select("destination").text(),
+        )
+    }
+
+    fun parseToPromisePayment(xmlString: String): PromisePaymentResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()!!
+        return PromisePaymentResponse(
+            recordId = retElement.select("recordid").text().toLongOrNull() ?: 0L,
+            agrmId = retElement.select("agrmid").text().toLongOrNull() ?: 0L,
+            payId = retElement.select("payid").text().toLongOrNull() ?: 0L,
+            currId = retElement.select("currid").text().toLongOrNull() ?: 0L,
+            debt = retElement.select("debt").text().toDoubleOrNull() ?: 0.0,
+            amount = retElement.select("amount").text().toDoubleOrNull() ?: 0.0,
+            promiseDate = retElement.select("promdate").text() ?: "",
+            promiseTill = retElement.select("promtill").text() ?: "",
+            symbol = retElement.select("symbol").text() ?: "",
+            username = retElement.select("username").text() ?: "",
+            agrmNum = retElement.select("agrmnum").text() ?: "",
+            status = retElement.select("status").text().toIntOrNull() ?: 0,
+            modPerson = retElement.select("modperson").text().toLongOrNull() ?: 0L,
+            cancelPerson = retElement.select("cancelperson").text().toLongOrNull() ?: 0L,
+            modFio = retElement.select("modfio").text() ?: "",
+            cancelFio = retElement.select("cancelfio").text() ?: "",
+            fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
         )
     }
 

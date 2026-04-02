@@ -1,10 +1,12 @@
 package com.impuls.billing.side_billing.utils
 
+import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 
 
@@ -92,4 +94,28 @@ fun RecoverPasswordResponse.toRecoverPassword(): RecoverPassword {
         destination = destination,
     )
 }
+
+
+fun PromisePaymentResponse.toPromisePaymentResponse(): PromisePaymentDto {
+    return PromisePaymentDto(
+        recordId = recordId,
+        agrmId = agrmId,
+        payId = payId,
+        currId = currId,
+        debt = debt,
+        amount = amount,
+        promiseDate = promiseDate,
+        promiseTill = promiseTill,
+        symbol = symbol,
+        username = username,
+        agrmNum = agrmNum,
+        status = status,
+        modPerson = modPerson,
+        cancelPerson = cancelPerson,
+        modFio = modFio,
+        cancelFio = cancelFio,
+        fee = fee,
+    )
+}
+
 
