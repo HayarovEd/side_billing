@@ -6,6 +6,7 @@ import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
+import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
@@ -14,6 +15,9 @@ import com.impuls.billing.side_billing.model.out_dto.dto.Payment
 import com.impuls.billing.side_billing.model.out_dto.dto.PaymentOrder
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.Tarif
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
+import com.impuls.billing.side_billing.model.out_dto.dto.TariffsSettingsRentAsService
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.UprsPayment
@@ -216,6 +220,70 @@ fun TarifsHistoryResponse.toTarifsHistory(): TarifsHistoryDto {
         mgrName = mgrName,
         mgrDescr = mgrDescr,
         currSymbol = currSymbol,
+    )
+}
+
+
+fun TarifFullResponse.toTarifFull(): TarifFullDto {
+    return TarifFullDto(
+        tarif = Tarif(
+            tarId = tariff.tarId,
+            actualtarId = tariff.actualtarId,
+            shape = tariff.shape,
+            traffLimit = tariff.traffLimit,
+            traffLimitPer = tariff.traffLimitPer,
+            type = tariff.type,
+            actbLock = tariff.actbLock,
+            archive = tariff.archive,
+            pricePlan = tariff.pricePlan,
+            traffType = tariff.traffType,
+            dailyRent = tariff.dailyRent,
+            dynamicRent = tariff.dynamicRent,
+            shapePrior = tariff.shapePrior,
+            unavaliable = tariff.unavaliable,
+            rentmultiply = tariff.rentmultiply,
+            chargeIncoming = tariff.chargeIncoming,
+            curId = tariff.curId,
+            used = tariff.used,
+            dynRoute = tariff.dynRoute,
+            serviceType = tariff.serviceType,
+            voipBlockLocal = tariff.voipBlockLocal,
+            blockRentDuration = tariff.blockRentDuration,
+            rent = tariff.rent,
+            blockRent = tariff.blockRent,
+            usrBlockRent = tariff.usrBlockRent,
+            admBlockRent = tariff.admBlockRent,
+            coefLow = tariff.coefLow,
+            coefHigh = tariff.coefHigh,
+            catNumbers = tariff.catNumbers,
+            descr = tariff.descr,
+            descrFull = tariff.descrFull,
+            symbol = tariff.symbol,
+            link = tariff.link,
+            uuid = tariff.uuid,
+            saleDictionAryId = tariff.saleDictionAryId,
+            additional = tariff.additional,
+            commonIncludes = tariff.commonIncludes,
+            useCommonIncludes = tariff.useCommonIncludes,
+            checkActiveHours = tariff.checkActiveHours,
+            rentAsAervice = tariff.rentAsAervice,
+            availableFl = tariff.availableFl,
+            availableUl = tariff.availableUl,
+            availableSp = tariff.availableSp,
+            organizationId = tariff.organizationId,
+            orgtarId = tariff.orgtarId,
+            organizationName = tariff.organizationName,
+        ),
+        tariffsSettingsRentAsService = TariffsSettingsRentAsService(
+            includeAbove = settingsRentAsService.includeAbove,
+            rentPeriod = settingsRentAsService.rentPeriod,
+            rentPeriodMonth = settingsRentAsService.rentPeriodMonth,
+            beginPeriod = settingsRentAsService.beginPeriod,
+            rent = settingsRentAsService.rent,
+            blockRent = settingsRentAsService.blockRent,
+            usrBlockRent = settingsRentAsService.usrBlockRent,
+            admBlockRent = settingsRentAsService.admBlockRent,
+        )
     )
 }
 

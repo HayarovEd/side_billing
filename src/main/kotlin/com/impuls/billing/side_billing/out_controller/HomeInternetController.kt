@@ -1,10 +1,11 @@
 package com.impuls.billing.side_billing.out_controller
 
-import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.repository.HomeInternetService
 import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -41,6 +42,17 @@ class HomeInternetController(
     ): Mono<List<TarifsHistoryDto>> {
         return homeInternetService.getTarifsHistory(
             authHeader = authHeader,
+        )
+    }
+
+    @GetMapping("/tariff/{id}")
+    fun getTariff(
+        @RequestHeader("Authorization") authHeader: String,
+        @PathVariable("id") id: Long,
+    ): Mono<TarifFullDto> {
+        return homeInternetService.getTariff(
+            authHeader = authHeader,
+            id = id
         )
     }
 }

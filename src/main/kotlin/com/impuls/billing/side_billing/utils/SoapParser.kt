@@ -15,12 +15,82 @@ import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPayment
 import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentOrderIdNameResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.UprsPaymentResponse
+import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
+import com.impuls.billing.side_billing.model.in_dto.tariff.TarifResponse
+import com.impuls.billing.side_billing.model.in_dto.tariff.TariffsSettingsRentAsServiceResponse
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseFullSoapTarifFullResponse(xmlString: String): TarifFullResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()!!
+        val tarifElement = retElement.select("tarif").first()!!
+        val settingsElement = retElement.select("settingsrentasservice").first()!!
+        return TarifFullResponse(
+            tariff = TarifResponse(
+                tarId = tarifElement.select("tarid").text().toLongOrNull() ?: 0,
+                actualtarId = tarifElement.select("actualtarid").text().toLongOrNull() ?: 0,
+                shape = tarifElement.select("shape").text().toLongOrNull() ?: 0,
+                traffLimit = tarifElement.select("trafflimit").text().toLongOrNull() ?: 0,
+                traffLimitPer = tarifElement.select("trafflimitper").text().toLongOrNull() ?: 0,
+                type = tarifElement.select("type").text().toLongOrNull() ?: 0,
+                actbLock = tarifElement.select("actblock").text().toLongOrNull() ?: 0,
+                archive = tarifElement.select("archive").text().toLongOrNull() ?: 0,
+                pricePlan = tarifElement.select("priceplan").text().toLongOrNull() ?: 0,
+                traffType = tarifElement.select("trafftype").text().toLongOrNull() ?: 0,
+                dailyRent = tarifElement.select("dailyrent").text().toLongOrNull() ?: 0,
+                dynamicRent = tarifElement.select("dynamicrent").text().toLongOrNull() ?: 0,
+                shapePrior = tarifElement.select("shapeprior").text().toLongOrNull() ?: 0,
+                unavaliable = tarifElement.select("unavaliable").text().toLongOrNull() ?: 0,
+                rentmultiply = tarifElement.select("rentmultiply").text().toLongOrNull() ?: 0,
+                chargeIncoming = tarifElement.select("chargeincoming").text().toLongOrNull() ?: 0,
+                curId = tarifElement.select("curid").text().toLongOrNull() ?: 0,
+                used = tarifElement.select("used").text().toLongOrNull() ?: 0,
+                voipBlockLocal = tarifElement.select("voipblocklocal").text().toLongOrNull() ?: 0,
+                dynRoute = tarifElement.select("dynroute").text().toLongOrNull() ?: 0,
+                serviceType = tarifElement.select("servicetype").text().toLongOrNull() ?: 0,
+                blockRentDuration = tarifElement.select("blockrentduration").text().toLongOrNull() ?: 0,
+                rent = tarifElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                blockRent = tarifElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
+                usrBlockRent = tarifElement.select("usrblockrent").text().toDoubleOrNull() ?: 0.0,
+                admBlockRent = tarifElement.select("admblockrent").text().toDoubleOrNull() ?: 0.0,
+                coefLow = tarifElement.select("coeflow").text().toDoubleOrNull() ?: 0.0,
+                coefHigh = tarifElement.select("coefhigh").text().toDoubleOrNull() ?: 0.0,
+                catNumbers = tarifElement.select("catnumbers").text().toLongOrNull() ?: 0,
+                descr = tarifElement.select("descr").text()?: "",
+                descrFull = tarifElement.select("descrfull").text()?: "",
+                symbol = tarifElement.select("symbol").text()?: "",
+                link = tarifElement.select("link").text()?: "",
+                uuid = tarifElement.select("uuid").text()?: "",
+                saleDictionAryId = tarifElement.select("saledictionaryid").text().toLongOrNull() ?: 0,
+                additional = tarifElement.select("additional").text().toLongOrNull() ?: 0,
+                commonIncludes = tarifElement.select("commonincludes").text().toLongOrNull() ?: 0,
+                useCommonIncludes = tarifElement.select("usecommonincludes").text().toLongOrNull() ?: 0,
+                checkActiveHours = tarifElement.select("checkactivehours").text().toLongOrNull() ?: 0,
+                rentAsAervice = tarifElement.select("rentasservice").text().toLongOrNull() ?: 0,
+                availableFl = tarifElement.select("availablefl").text().toLongOrNull() ?: 0,
+                availableUl = tarifElement.select("availableul").text().toLongOrNull() ?: 0,
+                availableSp = tarifElement.select("availablesp").text().toLongOrNull() ?: 0,
+                organizationId = tarifElement.select("organizationid").text().toLongOrNull() ?: 0,
+                orgtarId = tarifElement.select("orgtarid").text().toLongOrNull() ?: 0,
+                organizationName = tarifElement.select("organizationname").text()?: "",
+            ),
+            settingsRentAsService = TariffsSettingsRentAsServiceResponse(
+                includeAbove = settingsElement.select("includeabove").text().toDoubleOrNull() ?: 0.0,
+                rentPeriod = settingsElement.select("rentperiod").text().toIntOrNull() ?: 0,
+                rentPeriodMonth = settingsElement.select("rentperiodmonth").text().toIntOrNull() ?: 0,
+                beginPeriod = settingsElement.select("beginperiod").text().toIntOrNull() ?: 0,
+                rent =settingsElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                blockRent = settingsElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
+                usrBlockRent = settingsElement.select("usrblockrent").text().toDoubleOrNull() ?: 0.0,
+                admBlockRent = settingsElement.select("admblockrent").text().toDoubleOrNull() ?: 0.0,
+            )
+        )
+    }
 
     fun parseFullSoapTarifsHistoryResponse(xmlString: String): List<TarifsHistoryResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
