@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
+import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.AccountDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.AgreementDto
 import com.impuls.billing.side_billing.model.in_dto.client_account.ClientAccountDataDto
@@ -19,6 +20,26 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseFullSoapTarifsStaffResponse(xmlString: String): List<TarifsStaffResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        return retElement.map { element->
+            TarifsStaffResponse(
+                groupId = element.select("groupid").text().toLongOrNull() ?: 0L,
+                groupTarId = element.select("grouptarid").text().toLongOrNull() ?: 0L,
+                groupModuleId = element.select("groupmoduleid").text().toLongOrNull() ?: 0L,
+                tarId = element.select("tarid").text().toLongOrNull() ?: 0L,
+                tarType = element.select("tartype").text().toLongOrNull() ?: 0L,
+                tarCurId = element.select("tarcurid").text().toLongOrNull() ?: 0L,
+                shape = element.select("shape").text().toLongOrNull() ?: 0L,
+                rent = element.select("rent").text().toDoubleOrNull() ?: 0.0,
+                tarName = element.select("tarname").text()?: "",
+                tarSymbol = element.select("tarsymbol").text()?: "",
+                tarDescrFull = element.select("tardescrfull").text()?: "",
+            )
+        }
+    }
 
     fun parseFullSoapPaymentsResponse(xmlString: String): ClientPaymentsFullResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())

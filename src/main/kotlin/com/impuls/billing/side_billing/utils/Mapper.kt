@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
+import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
@@ -12,6 +13,7 @@ import com.impuls.billing.side_billing.model.out_dto.dto.Payment
 import com.impuls.billing.side_billing.model.out_dto.dto.PaymentOrder
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.UprsPayment
 
 
@@ -171,6 +173,24 @@ fun ClientPaymentsFullResponse.toClientPayments(): List<ClientPayment> {
         )
     }
 }
+
+
+fun TarifsStaffResponse.toTarifsStaff(): TarifsStaffDto {
+    return TarifsStaffDto(
+        groupId = groupId,
+        groupTarId = groupTarId,
+        groupModuleId = groupModuleId,
+        tarId = tarId,
+        tarType = tarType,
+        tarCurId = tarCurId,
+        shape = shape,
+        rent = rent,
+        tarName = tarName,
+        tarSymbol = tarSymbol,
+        tarDescrFull = tarDescrFull,
+    )
+}
+
 
 
 
