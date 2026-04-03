@@ -1,8 +1,10 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
+import com.impuls.billing.side_billing.utils.toTarifsHistory
 import com.impuls.billing.side_billing.utils.toTarifsStaff
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -44,6 +46,31 @@ class HomeInternetBillingService(
                 response.body?.let { body ->
                     println(body)
                     SoapParser.parseFullSoapTarifsStaffResponse(body).map { it.toTarifsStaff() }
+                }
+            }
+        )
+    }
+
+    fun getTarifsHistory(
+        sessionId: String,
+    ): Mono<List<TarifsHistoryDto>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:getTarifsHistory>\n" +
+                            "         <flt>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getTarifsHistory>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseFullSoapTarifsHistoryResponse(body).map { it.toTarifsHistory() }
                 }
             }
         )

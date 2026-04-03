@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
+import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
@@ -13,6 +14,7 @@ import com.impuls.billing.side_billing.model.out_dto.dto.Payment
 import com.impuls.billing.side_billing.model.out_dto.dto.PaymentOrder
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.UprsPayment
 
@@ -188,6 +190,32 @@ fun TarifsStaffResponse.toTarifsStaff(): TarifsStaffDto {
         tarName = tarName,
         tarSymbol = tarSymbol,
         tarDescrFull = tarDescrFull,
+    )
+}
+
+fun TarifsHistoryResponse.toTarifsHistory(): TarifsHistoryDto {
+    return TarifsHistoryDto(
+        tarType = tarType,
+        recordId = recordId,
+        vgId = vgId,
+        agrmId = agrmId,
+        uid = uid,
+        id = id,
+        tarIdNew = tarIdNew,
+        tarIdOld = tarIdOld,
+        requestBy = requestBy,
+        raspTime = raspTime,
+        changed = changed,
+        vgLogin = vgLogin,
+        agrmNum = agrmNum,
+        code = code,
+        accName = accName,
+        agentName = agentName,
+        tarNewName = tarNewName,
+        tarOldName = tarOldName,
+        mgrName = mgrName,
+        mgrDescr = mgrDescr,
+        currSymbol = currSymbol,
     )
 }
 

@@ -3,6 +3,7 @@ package com.impuls.billing.side_billing.repository
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.utils.monoMapper
 import org.springframework.http.HttpStatus
@@ -32,6 +33,18 @@ class HomeInternetService(
                     groupModuleId = groupModuleId,
                     tarId = tarId,
                 )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun getTarifsHistory(
+        authHeader: String,
+    ): Mono<List<TarifsHistoryDto>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                homeInternetBillingService.getTarifsHistory(
+                    sessionId = it.sessionId,)
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
