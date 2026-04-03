@@ -77,9 +77,11 @@ class PaymentBillingService(
             append(
                 SoapParser.setBaseAppend(
                     "<urn:getClientPayments>\n" +
+                            "<flt>\n"+
                             "<agrmnum>$agrmNum</agrmnum>\n" +
                             "<dtto>$dateTo</dtto>\n" +
                             "<dtfrom>$dateFrom</dtfrom>\n" +
+                            "</flt>\n"+
                     "</urn:getClientPayments>\n"
                 )
             )
