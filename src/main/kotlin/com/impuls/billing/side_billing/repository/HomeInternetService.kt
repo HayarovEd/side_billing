@@ -64,4 +64,21 @@ class HomeInternetService(
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
+
+    fun insertClientTarifsRasp(
+        authHeader: String,
+        vgId: Long,
+        tarIdNew: Long
+    ): Mono<Long> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                homeInternetBillingService.insertClientTarifsRasp(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                    tarIdNew = tarIdNew
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
 }

@@ -3,9 +3,12 @@ package com.impuls.billing.side_billing.out_controller
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
+import com.impuls.billing.side_billing.model.out_dto.request.RaspRequest
 import com.impuls.billing.side_billing.repository.HomeInternetService
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestParam
@@ -55,4 +58,18 @@ class HomeInternetController(
             id = id
         )
     }
+
+    @PostMapping("/tariff/rasp")
+    fun insertClientTarifsRasp(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody body: RaspRequest
+    ): Mono<Long> {
+        return homeInternetService.insertClientTarifsRasp(
+            authHeader = authHeader,
+            vgId = body.vgId,
+            tarIdNew = body.tarIdNew
+        )
+    }
+
+
 }

@@ -102,4 +102,33 @@ class HomeInternetBillingService(
             }
         )
     }
+
+    fun insertClientTarifsRasp(
+        sessionId: String,
+        vgId: Long,
+        tarIdNew: Long
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:insClientTarifsRasp>\n" +
+                            "         <val>\n" +
+                            "            <taridnew>$tarIdNew</taridnew>\n" +
+                            "           <vgid>$vgId</vgid>\n" +
+                            "         </val>\n" +
+                            "      </urn:insClientTarifsRasp>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
 }
