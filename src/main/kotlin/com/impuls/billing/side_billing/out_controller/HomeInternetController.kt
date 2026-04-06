@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
@@ -91,7 +92,7 @@ class HomeInternetController(
     @GetMapping("/mac")
     fun getMacStaff(
         @RequestHeader("Authorization") authHeader: String,
-        @RequestParam(name = "id", required = false) id: Long,
+        @RequestParam(name = "id", required = true) id: Long,
     ): Mono<List<MacStaffDto>> {
         return homeInternetService.getMacStaff(
             authHeader = authHeader,
@@ -111,5 +112,17 @@ class HomeInternetController(
             mac = body.mac,
         )
     }
+
+    @GetMapping("/availableService")
+    fun getAvailableServicesForVgroup(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgId", required = true) vgId: Long,
+    ): Mono<List<AvailableServiceDto>> {
+        return homeInternetService.getAvailableServicesForVgroup(
+            authHeader = authHeader,
+            vgId = vgId,
+        )
+    }
+
 
 }

@@ -1,11 +1,13 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
+import com.impuls.billing.side_billing.utils.toAvailableService
 import com.impuls.billing.side_billing.utils.toMacStaff
 import com.impuls.billing.side_billing.utils.toTarifFull
 import com.impuls.billing.side_billing.utils.toTarifsHistory
@@ -209,8 +211,35 @@ class HomeInternetBillingService(
             sessionId = sessionId,
             bodyFunction = { response ->
                 response.body?.let { body ->
-                    println(body)
                     SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+
+
+    fun getAvailableServicesForVgroup(
+        sessionId: String,
+        vgId: Long,
+    ): Mono<List<AvailableServiceDto>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:getAvailableServicesForVgroup>\n" +
+                            "         <flt>\n" +
+                            "            <vgid>$vgId</vgid>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getAvailableServicesForVgroup>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseAvailableServiceResponse(body).map { it.toAvailableService() }
                 }
             }
         )

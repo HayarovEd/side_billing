@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.utils
 
+import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
@@ -10,6 +11,7 @@ import com.impuls.billing.side_billing.model.in_dto.client_vgroup.MacStaffRespon
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
+import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -294,6 +296,24 @@ fun MacStaffResponse.toMacStaff(): MacStaffDto {
         vgId = vgId,
         segment = segment,
         mac = mac
+    )
+}
+
+fun AvailableServiceResponse.toAvailableService(): AvailableServiceDto {
+    return AvailableServiceDto(
+        tarId = tarId,
+        catIdx = catIdx,
+        isusBox = isusBox,
+        isUnique = isUnique,
+        descr = descr,
+        saleDictServType = saleDictServType,
+        promoPeriod = promoPeriod,
+        uuid = uuid,
+        serviceType = serviceType,
+        price = price,
+        includeAbove = includeAbove,
+        rentPeriod = rentPeriod,
+        rentPeriodMonth = rentPeriodMonth
     )
 }
 

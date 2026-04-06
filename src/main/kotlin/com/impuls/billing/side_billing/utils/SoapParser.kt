@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.utils
 
+import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
@@ -37,6 +38,29 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+
+    fun parseAvailableServiceResponse(xmlString: String): List<AvailableServiceResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement ->
+            AvailableServiceResponse(
+                tarId = retElement.select("tarid").text().toLongOrNull() ?: 0,
+                catIdx = retElement.select("catidx").text().toLongOrNull() ?: 0,
+                isusBox = retElement.select("isusbox").text().toBoolean(),
+                isUnique = retElement.select("isunique").text().toBoolean(),
+                descr = retElement.select("descr").text(),
+                saleDictServType = retElement.select("saledictservtype").text().toLongOrNull() ?: 0,
+                promoPeriod = retElement.select("promoperiod").text().toLongOrNull() ?: 0,
+                uuid = retElement.select("uuid").text(),
+                serviceType = retElement.select("servicetype").text().toLongOrNull() ?: 0,
+                price = retElement.select("price").text().toDoubleOrNull() ?: 0.0,
+                includeAbove = retElement.select("includeabove").text().toLongOrNull() ?: 0,
+                rentPeriod = retElement.select("rentperiod").text().toLongOrNull() ?: 0,
+                rentPeriodMonth = retElement.select("rentperiodmonth").text().toLongOrNull() ?: 0,
+            )
+        }
+    }
 
 
     fun parseFullMacStuffResponse(xmlString: String): List<MacStaffResponse> {
