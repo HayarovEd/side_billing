@@ -1,6 +1,8 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
+import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
 import com.impuls.billing.side_billing.model.out_dto.request.EmailUpdateRequest
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import reactor.core.publisher.Mono
 
@@ -111,5 +114,17 @@ class AccountController(
                 authHeader = authHeader
             )
     }
+
+    @GetMapping("/vgroup")
+    fun getClientVgroups(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "agrmid", required = false) agrmNum: Long?,
+    ): Mono<List<ClientVgroupFullResponse>> {
+        return accountService.getClientVgroups(
+            authHeader = authHeader,
+            agrmid = agrmNum
+        )
+    }
+
 
 }

@@ -3,8 +3,10 @@ package com.impuls.billing.side_billing.repository
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.AccountBillingService
 import com.impuls.billing.side_billing.in_controller.AuthBillingService
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
+import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
 import com.impuls.billing.side_billing.utils.monoMapper
 import org.springframework.http.HttpStatus
@@ -184,6 +186,22 @@ class AccountService(
                     tokenService.deleteSession(session) // Синхронное удаление
                     ResultSuccessDto(header == 1L)
                 }
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+
+    fun getClientVgroups(
+        authHeader: String,
+        agrmid: Long?,
+    ): Mono<List<ClientVgroupFullResponse>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                accountBillingService.getClientVgroups(
+                    sessionId = it.sessionId,
+                    agrmid = agrmid,
+                )
+            })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 

@@ -15,6 +15,19 @@ import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPayment
 import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentOrderIdNameResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.PaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.UprsPaymentResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.AddressBriefResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.BlockRaspResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.CategoryDiscountResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.CurrentModifierResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.IPMaskResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.MacStaffResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.StaffResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TariffsStaffResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TarifsRaspResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TurboShapeResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.VgroupAddonResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TariffsSettingsRentAsServiceResponse
@@ -24,6 +37,206 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+
+    fun parseFullSoapClientVgroupFullResponse(xmlString: String): List<ClientVgroupFullResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement ->
+            val vGroupElement = retElement.select("vgroup").first()!!
+            val tarRaspElements = retElement.select("tarrasp")
+            val staffElements = retElement.select("staff")
+            val macStaffElements = retElement.select("macstaff")
+            val tarStaffElements = retElement.select("tarstaff")
+            val turboShapeElements = retElement.select("turboshape")
+            val addonsElements = retElement.select("addons")
+            val blockRaspElements = retElement.select("blockrasp")
+            val addressesElements = retElement.select("addresses")
+            val currentModifier = vGroupElement.select("currentmodifier").first()!!
+            ClientVgroupFullResponse(
+                vGroup = ClientVgroupResponse(
+                    agrmId = vGroupElement.select("agrmid").text().toLongOrNull() ?: 0,
+                    vgId = vGroupElement.select("vgid").text().toLongOrNull() ?: 0,
+                    blkReq = vGroupElement.select("blkreq").text().toLongOrNull() ?: 0,
+                    blocked = vGroupElement.select("blocked").text().toLongOrNull() ?: 0,
+                    changed = vGroupElement.select("changed").text().toLongOrNull() ?: 0,
+                    agentId = vGroupElement.select("agentid").text().toLongOrNull() ?: 0,
+                    tarifId = vGroupElement.select("tarifid").text().toLongOrNull() ?: 0,
+                    tarifType = vGroupElement.select("tariftype").text().toLongOrNull() ?: 0,
+                    curShape = vGroupElement.select("curshape").text().toLongOrNull() ?: 0,
+                    usesmartCards = vGroupElement.select("usesmartcards").text().toLongOrNull() ?: 0,
+                    useCas = vGroupElement.select("usecas").text().toLongOrNull() ?: 0,
+                    radiusInsertMacStaff = vGroupElement.select("radiusinsertmacstaff").text().toLongOrNull() ?: 0,
+                    multiply = vGroupElement.select("multiply").text().toLongOrNull() ?: 0,
+                    serviceRent = vGroupElement.select("servicerent").text().toDoubleOrNull() ?: 0.0,
+                    serviceVolume = vGroupElement.select("servicevolume").text().toLongOrNull() ?: 0,
+                    serviceUsedIn = vGroupElement.select("serviceusedin").text().toLongOrNull() ?: 0,
+                    serviceUsedOut = vGroupElement.select("serviceusedout").text().toLongOrNull() ?: 0,
+                    agentDescr = vGroupElement.select("agentdescr").text() ?: "",
+                    tarifDescr = vGroupElement.select("tarifdescr").text() ?: "",
+                    login = vGroupElement.select("login").text() ?: "",
+                    currentModifier = CurrentModifierResponse(
+                        type = currentModifier.select("type").text() ?: "",
+                        value = currentModifier.select("value").text().toDoubleOrNull() ?: 0.0,
+                    ),
+                ),
+                tarRasp = tarRaspElements.map { tarRaspElement ->
+                    val catDiscountsElements = retElement.select("catdiscounts")
+                    TarifsRaspResponse(
+                        force = tarRaspElement.select("force").text().toShortOrNull() ?: 0,
+                        recordId = tarRaspElement.select("recordid").text().toLongOrNull() ?: 0,
+                        vgId = tarRaspElement.select("vgid").text().toLongOrNull() ?: 0,
+                        agrmId = tarRaspElement.select("agrmid").text().toLongOrNull() ?: 0,
+                        groupId = tarRaspElement.select("groupid").text().toLongOrNull() ?: 0,
+                        uid = tarRaspElement.select("uid").text().toLongOrNull() ?: 0,
+                        id = tarRaspElement.select("id").text().toLongOrNull() ?: 0,
+                        tarIdNew = tarRaspElement.select("taridnew").text().toLongOrNull() ?: 0,
+                        tarIdOld = tarRaspElement.select("taridold").text().toLongOrNull() ?: 0,
+                        agentType = tarRaspElement.select("agenttype").text().toLongOrNull() ?: 0,
+                        tarNewCurId = tarRaspElement.select("tarnewcurid").text().toLongOrNull() ?: 0,
+                        tarOldCurId = tarRaspElement.select("taroldcurid").text().toLongOrNull() ?: 0,
+                        requestBy = tarRaspElement.select("requestby").text() ?: "",
+                        changeTime = tarRaspElement.select("changetime").text() ?: "",
+                        timeTo = tarRaspElement.select("timeto").text() ?: "",
+                        vgLogin = tarRaspElement.select("vglogin").text() ?: "",
+                        agrmNum = tarRaspElement.select("agrmnum").text() ?: "",
+                        code = tarRaspElement.select("code").text() ?: "",
+                        accName = tarRaspElement.select("accname").text() ?: "",
+                        agentName = tarRaspElement.select("agentname").text() ?: "",
+                        tarNewName = tarRaspElement.select("tarnewname").text() ?: "",
+                        tarOldName = tarRaspElement.select("taroldname").text() ?: "",
+                        mgrName = tarRaspElement.select("mgrname").text() ?: "",
+                        tarNewSymbol = tarRaspElement.select("tarnewsymbol").text() ?: "",
+                        tarOldSymbol = tarRaspElement.select("taroldsymbol").text() ?: "",
+                        keepAllModifiers = tarRaspElement.select("keepallmodifiers").text().toLongOrNull() ?: 0,
+                        keepTarModifier = tarRaspElement.select("keeptarmodifier").text().toLongOrNull() ?: 0,
+                        discount = tarRaspElement.select("discount").text().toDoubleOrNull() ?: 0.0,
+                        absDiscount = tarRaspElement.select("absdiscount").text().toDoubleOrNull() ?: 0.0,
+                        absBlockDiscount = tarRaspElement.select("absblockdiscount").text().toDoubleOrNull() ?: 0.0,
+                        rent = tarRaspElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                        blockRent = tarRaspElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
+                        servCatIdx = tarRaspElement.select("servcatidx").text().toLongOrNull() ?: 0,
+                        tarNewRentAsService = tarRaspElement.select("tarnewrentasservice").text().toBoolean(),
+                        catDiscounts = catDiscountsElements.map { catDiscountsElement ->
+                            CategoryDiscountResponse(
+                                catIdx = catDiscountsElement.select("catidx").text().toLongOrNull() ?: 0,
+                                discount = catDiscountsElement.select("discount").text().toDoubleOrNull() ?: 0.0,
+                                above = catDiscountsElement.select("above").text().toDoubleOrNull() ?: 0.0,
+                                rate = catDiscountsElement.select("rate").text().toDoubleOrNull() ?: 0.0,
+                                includes = catDiscountsElement.select("includes").text().toLongOrNull() ?: 0,
+                                parentRecordId = catDiscountsElement.select("parentrecordid").text().toLongOrNull()
+                                    ?: 0,
+                                keepModifier = catDiscountsElement.select("keepmodifier").text().toLongOrNull() ?: 0,
+                            )
+                        },
+                    )
+                },
+                staff = staffElements.map { staffElement ->
+                    val ipMaskElement = staffElement.select("ipmask").first()!!
+                    StaffResponse(
+                        recordId = staffElement.select("recordid").text().toLongOrNull() ?: 0,
+                        vgId = staffElement.select("vgid").text().toLongOrNull() ?: 0,
+                        equipId = staffElement.select("equipid").text().toLongOrNull() ?: 0,
+                        type = staffElement.select("type").text().toLongOrNull() ?: 0,
+                        asId = staffElement.select("as").text().toLongOrNull() ?: 0,
+                        servId = staffElement.select("servid").text().toLongOrNull() ?: 0,
+                        servcatIdx = staffElement.select("servcatidx").text().toLongOrNull() ?: 0,
+                        createService = staffElement.select("createservice").text().toBoolean(),
+                        ipMask = IPMaskResponse(
+                            ip = ipMaskElement.select("ip").text() ?: "",
+                            mask = ipMaskElement.select("mask").text().toIntOrNull() ?: 0,
+                            prefix = ipMaskElement.select("prefix").text().toIntOrNull() ?: 0,
+                            segmentId = ipMaskElement.select("segmentid").text().toLongOrNull() ?: 0,
+                        ),
+                    )
+                },
+                macstaff = macStaffElements.map { macStaffElement ->
+                    MacStaffResponse(
+                        macId = macStaffElement.select("macid").text().toLongOrNull() ?: 0,
+                        recordId = macStaffElement.select("recordid").text().toLongOrNull() ?: 0,
+                        vgId = macStaffElement.select("vgid").text().toLongOrNull() ?: 0,
+                        segment = macStaffElement.select("segment").text() ?: "",
+                        mac = macStaffElement.select("mac").text() ?: "",
+                    )
+                },
+                tarstaff = tarStaffElements.map { tarStaffElement ->
+                    TariffsStaffResponse(
+                        groupId = tarStaffElement.select("groupid").text().toLongOrNull() ?: 0,
+                        groupTarId = tarStaffElement.select("grouptarid").text().toLongOrNull() ?: 0,
+                        groupModuleId = tarStaffElement.select("groupmoduleid").text().toLongOrNull() ?: 0,
+                        tarId = tarStaffElement.select("tarid").text().toLongOrNull() ?: 0,
+                        tarType = tarStaffElement.select("tartype").text().toLongOrNull() ?: 0,
+                        tarCurId = tarStaffElement.select("tarcurid").text().toLongOrNull() ?: 0,
+                        shape = tarStaffElement.select("shape").text().toLongOrNull() ?: 0,
+                        rent = tarStaffElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                        tarName = tarStaffElement.select("tarname").text() ?: "",
+                        tarSymbol = tarStaffElement.select("tarsymbol").text() ?: "",
+                        tarDescrFull = tarStaffElement.select("tardescrfull").text() ?: "",
+                    )
+                },
+                turboshape = turboShapeElements.map { turboShapeElement ->
+                    TurboShapeResponse(
+                        recordId = turboShapeElement.select("recordid").text().toLongOrNull() ?: 0,
+                        vgId = turboShapeElement.select("vgid").text().toLongOrNull() ?: 0,
+                        servId = turboShapeElement.select("servid").text().toLongOrNull() ?: 0,
+                        tarId = turboShapeElement.select("tarid").text().toLongOrNull() ?: 0,
+                        catIdx = turboShapeElement.select("catidx").text().toLongOrNull() ?: 0,
+                        shape = turboShapeElement.select("shape").text().toLongOrNull() ?: 0,
+                        timeFrom = turboShapeElement.select("timefrom").text() ?: "",
+                        timeTo = turboShapeElement.select("timeto").text() ?: "",
+                        descr = turboShapeElement.select("descr").text() ?: "",
+                        login = turboShapeElement.select("login").text() ?: "",
+                    )
+                },
+                addons = addonsElements.map { addonsElement ->
+                    VgroupAddonResponse(
+                        vgId = addonsElement.select("vgid").text().toLongOrNull() ?: 0,
+                        type = addonsElement.select("type").text().toLongOrNull() ?: 0,
+                        agentId = addonsElement.select("agentid").text().toLongOrNull() ?: 0,
+                        idx = addonsElement.select("idx").text().toLongOrNull() ?: 0,
+                        name = addonsElement.select("name").text() ?: "",
+                        descr = addonsElement.select("descr").text() ?: "",
+                        strValue = addonsElement.select("strvalue").text() ?: "",
+                    )
+                },
+                blockrasp = blockRaspElements.map { blockRaspElement ->
+                    BlockRaspResponse(
+                        recordId = blockRaspElement.select("recordid").text().toLongOrNull() ?: 0,
+                        vgId = blockRaspElement.select("vgid").text().toLongOrNull() ?: 0,
+                        groupId = blockRaspElement.select("groupid").text().toLongOrNull() ?: 0,
+                        blkReq = blockRaspElement.select("blkreq").text().toLongOrNull() ?: 0,
+                        id = blockRaspElement.select("id").text().toLongOrNull() ?: 0,
+                        isHistory = blockRaspElement.select("ishistory").text().toLongOrNull() ?: 0,
+                        isFreewill = blockRaspElement.select("isfreewill").text().toLongOrNull() ?: 0,
+                        requestBy = blockRaspElement.select("requestby").text().toLongOrNull() ?: 0,
+                        unBlockedBy = blockRaspElement.select("unblockedby").text().toLongOrNull() ?: 0,
+                        agrmId = blockRaspElement.select("agrmid").text().toLongOrNull() ?: 0,
+                        uid = blockRaspElement.select("uid").text().toLongOrNull() ?: 0,
+                        changeTime = blockRaspElement.select("changetime").text() ?: "",
+                        mgrName = blockRaspElement.select("mgrname").text() ?: "",
+                        mgrDescr = blockRaspElement.select("mgrdescr").text() ?: "",
+                        comment = blockRaspElement.select("comment").text() ?: "",
+                        timeTo = blockRaspElement.select("timeto").text() ?: "",
+                        login = blockRaspElement.select("login").text() ?: "",
+                        unBlockedManagerLogin = blockRaspElement.select("unblockedmanagerlogin").text() ?: "",
+                        unBlockedManagerName = blockRaspElement.select("unblockedmanagername").text() ?: "",
+                        unBlockedManagerDescr = blockRaspElement.select("unblockedmanagerdescr").text() ?: "",
+                        agrmNum = blockRaspElement.select("agrmnum").text() ?: "",
+                        username = blockRaspElement.select("username").text() ?: "",
+                    )
+                },
+                addresses = addressesElements.map { addressesElement ->
+                    AddressBriefResponse(
+                        type = addressesElement.select("type").text().toLongOrNull() ?: 0,
+                        code = addressesElement.select("code").text() ?: "",
+                        address = addressesElement.select("address").text() ?: "",
+                        buildIngUud = addressesElement.select("buildinguuid").text() ?: ""
+                    )
+                }
+            )
+        }
+    }
+
 
     fun parseFullSoapTarifFullResponse(xmlString: String): TarifFullResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
@@ -61,11 +274,11 @@ object SoapParser {
                 coefLow = tarifElement.select("coeflow").text().toDoubleOrNull() ?: 0.0,
                 coefHigh = tarifElement.select("coefhigh").text().toDoubleOrNull() ?: 0.0,
                 catNumbers = tarifElement.select("catnumbers").text().toLongOrNull() ?: 0,
-                descr = tarifElement.select("descr").text()?: "",
-                descrFull = tarifElement.select("descrfull").text()?: "",
-                symbol = tarifElement.select("symbol").text()?: "",
-                link = tarifElement.select("link").text()?: "",
-                uuid = tarifElement.select("uuid").text()?: "",
+                descr = tarifElement.select("descr").text() ?: "",
+                descrFull = tarifElement.select("descrfull").text() ?: "",
+                symbol = tarifElement.select("symbol").text() ?: "",
+                link = tarifElement.select("link").text() ?: "",
+                uuid = tarifElement.select("uuid").text() ?: "",
                 saleDictionAryId = tarifElement.select("saledictionaryid").text().toLongOrNull() ?: 0,
                 additional = tarifElement.select("additional").text().toLongOrNull() ?: 0,
                 commonIncludes = tarifElement.select("commonincludes").text().toLongOrNull() ?: 0,
@@ -77,14 +290,14 @@ object SoapParser {
                 availableSp = tarifElement.select("availablesp").text().toLongOrNull() ?: 0,
                 organizationId = tarifElement.select("organizationid").text().toLongOrNull() ?: 0,
                 orgtarId = tarifElement.select("orgtarid").text().toLongOrNull() ?: 0,
-                organizationName = tarifElement.select("organizationname").text()?: "",
+                organizationName = tarifElement.select("organizationname").text() ?: "",
             ),
             settingsRentAsService = TariffsSettingsRentAsServiceResponse(
                 includeAbove = settingsElement.select("includeabove").text().toDoubleOrNull() ?: 0.0,
                 rentPeriod = settingsElement.select("rentperiod").text().toIntOrNull() ?: 0,
                 rentPeriodMonth = settingsElement.select("rentperiodmonth").text().toIntOrNull() ?: 0,
                 beginPeriod = settingsElement.select("beginperiod").text().toIntOrNull() ?: 0,
-                rent =settingsElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                rent = settingsElement.select("rent").text().toDoubleOrNull() ?: 0.0,
                 blockRent = settingsElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
                 usrBlockRent = settingsElement.select("usrblockrent").text().toDoubleOrNull() ?: 0.0,
                 admBlockRent = settingsElement.select("admblockrent").text().toDoubleOrNull() ?: 0.0,

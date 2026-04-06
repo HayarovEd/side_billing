@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
 import org.springframework.stereotype.Service
@@ -177,6 +178,33 @@ class AccountBillingService(
             bodyFunction = { response ->
                 response.body?.let { body ->
                     SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+    fun getClientVgroups(
+        sessionId: String,
+        agrmid: Long?,
+    ): Mono<List<ClientVgroupFullResponse>> {
+        val agrmidStr = agrmid?.toString() ?: ""
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientVgroups>\n" +
+                            "         <flt>\n" +
+                            "          <agrmid>$agrmidStr</agrmid>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientVgroups>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseFullSoapClientVgroupFullResponse(body)
                 }
             }
         )
