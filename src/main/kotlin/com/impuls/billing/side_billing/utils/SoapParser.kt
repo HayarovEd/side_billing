@@ -39,6 +39,15 @@ import org.jsoup.select.Elements
 object SoapParser {
 
 
+    fun parseFullMacStuffResponse(xmlString: String): List<MacStaffResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map {
+            parseMacStuffResponse(it)
+        }
+    }
+
+
     fun parseFullSoapClientVgroupFullResponse(xmlString: String): List<ClientVgroupFullResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElements = doc.select("ret")
@@ -72,11 +81,11 @@ object SoapParser {
                     serviceVolume = vGroupElement.select("servicevolume").text().toLongOrNull() ?: 0,
                     serviceUsedIn = vGroupElement.select("serviceusedin").text().toLongOrNull() ?: 0,
                     serviceUsedOut = vGroupElement.select("serviceusedout").text().toLongOrNull() ?: 0,
-                    agentDescr = vGroupElement.select("agentdescr").text() ?: "",
-                    tarifDescr = vGroupElement.select("tarifdescr").text() ?: "",
-                    login = vGroupElement.select("login").text() ?: "",
+                    agentDescr = vGroupElement.select("agentdescr").text(),
+                    tarifDescr = vGroupElement.select("tarifdescr").text(),
+                    login = vGroupElement.select("login").text(),
                     currentModifier = CurrentModifierResponse(
-                        type = currentModifier.select("type").text() ?: "",
+                        type = currentModifier.select("type").text(),
                         value = currentModifier.select("value").text().toDoubleOrNull() ?: 0.0,
                     ),
                 ),
@@ -95,19 +104,19 @@ object SoapParser {
                         agentType = tarRaspElement.select("agenttype").text().toLongOrNull() ?: 0,
                         tarNewCurId = tarRaspElement.select("tarnewcurid").text().toLongOrNull() ?: 0,
                         tarOldCurId = tarRaspElement.select("taroldcurid").text().toLongOrNull() ?: 0,
-                        requestBy = tarRaspElement.select("requestby").text() ?: "",
-                        changeTime = tarRaspElement.select("changetime").text() ?: "",
-                        timeTo = tarRaspElement.select("timeto").text() ?: "",
-                        vgLogin = tarRaspElement.select("vglogin").text() ?: "",
-                        agrmNum = tarRaspElement.select("agrmnum").text() ?: "",
-                        code = tarRaspElement.select("code").text() ?: "",
-                        accName = tarRaspElement.select("accname").text() ?: "",
-                        agentName = tarRaspElement.select("agentname").text() ?: "",
-                        tarNewName = tarRaspElement.select("tarnewname").text() ?: "",
-                        tarOldName = tarRaspElement.select("taroldname").text() ?: "",
-                        mgrName = tarRaspElement.select("mgrname").text() ?: "",
-                        tarNewSymbol = tarRaspElement.select("tarnewsymbol").text() ?: "",
-                        tarOldSymbol = tarRaspElement.select("taroldsymbol").text() ?: "",
+                        requestBy = tarRaspElement.select("requestby").text(),
+                        changeTime = tarRaspElement.select("changetime").text(),
+                        timeTo = tarRaspElement.select("timeto").text(),
+                        vgLogin = tarRaspElement.select("vglogin").text(),
+                        agrmNum = tarRaspElement.select("agrmnum").text(),
+                        code = tarRaspElement.select("code").text(),
+                        accName = tarRaspElement.select("accname").text(),
+                        agentName = tarRaspElement.select("agentname").text(),
+                        tarNewName = tarRaspElement.select("tarnewname").text(),
+                        tarOldName = tarRaspElement.select("taroldname").text(),
+                        mgrName = tarRaspElement.select("mgrname").text(),
+                        tarNewSymbol = tarRaspElement.select("tarnewsymbol").text(),
+                        tarOldSymbol = tarRaspElement.select("taroldsymbol").text(),
                         keepAllModifiers = tarRaspElement.select("keepallmodifiers").text().toLongOrNull() ?: 0,
                         keepTarModifier = tarRaspElement.select("keeptarmodifier").text().toLongOrNull() ?: 0,
                         discount = tarRaspElement.select("discount").text().toDoubleOrNull() ?: 0.0,
@@ -143,7 +152,7 @@ object SoapParser {
                         servcatIdx = staffElement.select("servcatidx").text().toLongOrNull() ?: 0,
                         createService = staffElement.select("createservice").text().toBoolean(),
                         ipMask = IPMaskResponse(
-                            ip = ipMaskElement.select("ip").text() ?: "",
+                            ip = ipMaskElement.select("ip").text(),
                             mask = ipMaskElement.select("mask").text().toIntOrNull() ?: 0,
                             prefix = ipMaskElement.select("prefix").text().toIntOrNull() ?: 0,
                             segmentId = ipMaskElement.select("segmentid").text().toLongOrNull() ?: 0,
@@ -151,13 +160,7 @@ object SoapParser {
                     )
                 },
                 macstaff = macStaffElements.map { macStaffElement ->
-                    MacStaffResponse(
-                        macId = macStaffElement.select("macid").text().toLongOrNull() ?: 0,
-                        recordId = macStaffElement.select("recordid").text().toLongOrNull() ?: 0,
-                        vgId = macStaffElement.select("vgid").text().toLongOrNull() ?: 0,
-                        segment = macStaffElement.select("segment").text() ?: "",
-                        mac = macStaffElement.select("mac").text() ?: "",
-                    )
+                    parseMacStuffResponse(macStaffElement)
                 },
                 tarstaff = tarStaffElements.map { tarStaffElement ->
                     TariffsStaffResponse(
@@ -169,9 +172,9 @@ object SoapParser {
                         tarCurId = tarStaffElement.select("tarcurid").text().toLongOrNull() ?: 0,
                         shape = tarStaffElement.select("shape").text().toLongOrNull() ?: 0,
                         rent = tarStaffElement.select("rent").text().toDoubleOrNull() ?: 0.0,
-                        tarName = tarStaffElement.select("tarname").text() ?: "",
-                        tarSymbol = tarStaffElement.select("tarsymbol").text() ?: "",
-                        tarDescrFull = tarStaffElement.select("tardescrfull").text() ?: "",
+                        tarName = tarStaffElement.select("tarname").text(),
+                        tarSymbol = tarStaffElement.select("tarsymbol").text(),
+                        tarDescrFull = tarStaffElement.select("tardescrfull").text(),
                     )
                 },
                 turboshape = turboShapeElements.map { turboShapeElement ->
@@ -182,10 +185,10 @@ object SoapParser {
                         tarId = turboShapeElement.select("tarid").text().toLongOrNull() ?: 0,
                         catIdx = turboShapeElement.select("catidx").text().toLongOrNull() ?: 0,
                         shape = turboShapeElement.select("shape").text().toLongOrNull() ?: 0,
-                        timeFrom = turboShapeElement.select("timefrom").text() ?: "",
-                        timeTo = turboShapeElement.select("timeto").text() ?: "",
-                        descr = turboShapeElement.select("descr").text() ?: "",
-                        login = turboShapeElement.select("login").text() ?: "",
+                        timeFrom = turboShapeElement.select("timefrom").text(),
+                        timeTo = turboShapeElement.select("timeto").text(),
+                        descr = turboShapeElement.select("descr").text(),
+                        login = turboShapeElement.select("login").text(),
                     )
                 },
                 addons = addonsElements.map { addonsElement ->
@@ -194,9 +197,9 @@ object SoapParser {
                         type = addonsElement.select("type").text().toLongOrNull() ?: 0,
                         agentId = addonsElement.select("agentid").text().toLongOrNull() ?: 0,
                         idx = addonsElement.select("idx").text().toLongOrNull() ?: 0,
-                        name = addonsElement.select("name").text() ?: "",
-                        descr = addonsElement.select("descr").text() ?: "",
-                        strValue = addonsElement.select("strvalue").text() ?: "",
+                        name = addonsElement.select("name").text(),
+                        descr = addonsElement.select("descr").text(),
+                        strValue = addonsElement.select("strvalue").text(),
                     )
                 },
                 blockrasp = blockRaspElements.map { blockRaspElement ->
@@ -212,29 +215,39 @@ object SoapParser {
                         unBlockedBy = blockRaspElement.select("unblockedby").text().toLongOrNull() ?: 0,
                         agrmId = blockRaspElement.select("agrmid").text().toLongOrNull() ?: 0,
                         uid = blockRaspElement.select("uid").text().toLongOrNull() ?: 0,
-                        changeTime = blockRaspElement.select("changetime").text() ?: "",
-                        mgrName = blockRaspElement.select("mgrname").text() ?: "",
-                        mgrDescr = blockRaspElement.select("mgrdescr").text() ?: "",
-                        comment = blockRaspElement.select("comment").text() ?: "",
-                        timeTo = blockRaspElement.select("timeto").text() ?: "",
-                        login = blockRaspElement.select("login").text() ?: "",
-                        unBlockedManagerLogin = blockRaspElement.select("unblockedmanagerlogin").text() ?: "",
-                        unBlockedManagerName = blockRaspElement.select("unblockedmanagername").text() ?: "",
-                        unBlockedManagerDescr = blockRaspElement.select("unblockedmanagerdescr").text() ?: "",
-                        agrmNum = blockRaspElement.select("agrmnum").text() ?: "",
-                        username = blockRaspElement.select("username").text() ?: "",
+                        changeTime = blockRaspElement.select("changetime").text(),
+                        mgrName = blockRaspElement.select("mgrname").text(),
+                        mgrDescr = blockRaspElement.select("mgrdescr").text(),
+                        comment = blockRaspElement.select("comment").text(),
+                        timeTo = blockRaspElement.select("timeto").text(),
+                        login = blockRaspElement.select("login").text(),
+                        unBlockedManagerLogin = blockRaspElement.select("unblockedmanagerlogin").text(),
+                        unBlockedManagerName = blockRaspElement.select("unblockedmanagername").text(),
+                        unBlockedManagerDescr = blockRaspElement.select("unblockedmanagerdescr").text(),
+                        agrmNum = blockRaspElement.select("agrmnum").text(),
+                        username = blockRaspElement.select("username").text(),
                     )
                 },
                 addresses = addressesElements.map { addressesElement ->
                     AddressBriefResponse(
                         type = addressesElement.select("type").text().toLongOrNull() ?: 0,
-                        code = addressesElement.select("code").text() ?: "",
-                        address = addressesElement.select("address").text() ?: "",
-                        buildIngUud = addressesElement.select("buildinguuid").text() ?: ""
+                        code = addressesElement.select("code").text(),
+                        address = addressesElement.select("address").text(),
+                        buildIngUud = addressesElement.select("buildinguuid").text()
                     )
                 }
             )
         }
+    }
+
+    private fun parseMacStuffResponse(macStaffElement: Element): MacStaffResponse {
+        return MacStaffResponse(
+            macId = macStaffElement.select("macid").text().toLongOrNull() ?: 0,
+            recordId = macStaffElement.select("recordid").text().toLongOrNull() ?: 0,
+            vgId = macStaffElement.select("vgid").text().toLongOrNull() ?: 0,
+            segment = macStaffElement.select("segment").text(),
+            mac = macStaffElement.select("mac").text(),
+        )
     }
 
 
@@ -274,11 +287,11 @@ object SoapParser {
                 coefLow = tarifElement.select("coeflow").text().toDoubleOrNull() ?: 0.0,
                 coefHigh = tarifElement.select("coefhigh").text().toDoubleOrNull() ?: 0.0,
                 catNumbers = tarifElement.select("catnumbers").text().toLongOrNull() ?: 0,
-                descr = tarifElement.select("descr").text() ?: "",
-                descrFull = tarifElement.select("descrfull").text() ?: "",
-                symbol = tarifElement.select("symbol").text() ?: "",
-                link = tarifElement.select("link").text() ?: "",
-                uuid = tarifElement.select("uuid").text() ?: "",
+                descr = tarifElement.select("descr").text(),
+                descrFull = tarifElement.select("descrfull").text(),
+                symbol = tarifElement.select("symbol").text(),
+                link = tarifElement.select("link").text(),
+                uuid = tarifElement.select("uuid").text(),
                 saleDictionAryId = tarifElement.select("saledictionaryid").text().toLongOrNull() ?: 0,
                 additional = tarifElement.select("additional").text().toLongOrNull() ?: 0,
                 commonIncludes = tarifElement.select("commonincludes").text().toLongOrNull() ?: 0,
@@ -290,7 +303,7 @@ object SoapParser {
                 availableSp = tarifElement.select("availablesp").text().toLongOrNull() ?: 0,
                 organizationId = tarifElement.select("organizationid").text().toLongOrNull() ?: 0,
                 orgtarId = tarifElement.select("orgtarid").text().toLongOrNull() ?: 0,
-                organizationName = tarifElement.select("organizationname").text() ?: "",
+                organizationName = tarifElement.select("organizationname").text(),
             ),
             settingsRentAsService = TariffsSettingsRentAsServiceResponse(
                 includeAbove = settingsElement.select("includeabove").text().toDoubleOrNull() ?: 0.0,
@@ -318,19 +331,19 @@ object SoapParser {
                 id = element.select("id").text().toLongOrNull() ?: 0L,
                 tarIdNew = element.select("taridnew").text().toLongOrNull() ?: 0L,
                 tarIdOld = element.select("taridold").text().toLongOrNull() ?: 0L,
-                requestBy = element.select("requestby").text() ?: "",
-                raspTime = element.select("rasptime").text() ?: "",
-                changed = element.select("changed").text() ?: "",
-                vgLogin = element.select("vglogin").text() ?: "",
-                agrmNum = element.select("agrmnum").text() ?: "",
-                code = element.select("code").text() ?: "",
-                accName = element.select("accname").text() ?: "",
-                agentName = element.select("agentname").text() ?: "",
-                tarNewName = element.select("tarnewname").text() ?: "",
-                tarOldName = element.select("taroldname").text() ?: "",
-                mgrName = element.select("mgrname").text() ?: "",
-                mgrDescr = element.select("mgrdescr").text() ?: "",
-                currSymbol = element.select("currsymbol").text() ?: "",
+                requestBy = element.select("requestby").text(),
+                raspTime = element.select("rasptime").text(),
+                changed = element.select("changed").text(),
+                vgLogin = element.select("vglogin").text(),
+                agrmNum = element.select("agrmnum").text(),
+                code = element.select("code").text(),
+                accName = element.select("accname").text(),
+                agentName = element.select("agentname").text(),
+                tarNewName = element.select("tarnewname").text(),
+                tarOldName = element.select("taroldname").text(),
+                mgrName = element.select("mgrname").text(),
+                mgrDescr = element.select("mgrdescr").text(),
+                currSymbol = element.select("currsymbol").text(),
             )
         }
     }
@@ -349,9 +362,9 @@ object SoapParser {
                 tarCurId = element.select("tarcurid").text().toLongOrNull() ?: 0L,
                 shape = element.select("shape").text().toLongOrNull() ?: 0L,
                 rent = element.select("rent").text().toDoubleOrNull() ?: 0.0,
-                tarName = element.select("tarname").text() ?: "",
-                tarSymbol = element.select("tarsymbol").text() ?: "",
-                tarDescrFull = element.select("tardescrfull").text() ?: "",
+                tarName = element.select("tarname").text(),
+                tarSymbol = element.select("tarsymbol").text(),
+                tarDescrFull = element.select("tardescrfull").text(),
             )
         }
     }
@@ -370,18 +383,18 @@ object SoapParser {
                 timestamp = element.select("timestamp").text().toLongOrNull() ?: 0L,
                 localtimestamp = element.select("localtimestamp").text().toLongOrNull() ?: 0L,
                 amountCurr = element.select("amountcurr").text().toDoubleOrNull() ?: 0.0,
-                orderNum = element.select("ordernum").text() ?: "",
+                orderNum = element.select("ordernum").text(),
                 uid = element.select("uid").text().toLongOrNull() ?: 0L,
                 operId = element.select("operid").text().toLongOrNull() ?: 0L,
                 cardNumber = element.select("cardnumber").text().toLongOrNull() ?: 0L,
-                currSymb = element.select("currsymb").text() ?: "",
-                uname = element.select("uname").text() ?: "",
-                agrm = element.select("agrm").text() ?: "",
-                mgr = element.select("mgr").text() ?: "",
-                mgrDescr = element.select("mgrdescr").text() ?: "",
-                mgrLogin = element.select("mgrlogin").text() ?: "",
-                operName = element.select("opername").text() ?: "",
-                login = element.select("login").text() ?: "",
+                currSymb = element.select("currsymb").text(),
+                uname = element.select("uname").text(),
+                agrm = element.select("agrm").text(),
+                mgr = element.select("mgr").text(),
+                mgrDescr = element.select("mgrdescr").text(),
+                mgrLogin = element.select("mgrlogin").text(),
+                operName = element.select("opername").text(),
+                login = element.select("login").text(),
                 isEps = element.select("iseps").text().toBoolean(),
             )
         }
@@ -391,7 +404,7 @@ object SoapParser {
         return elements.map { element ->
             PaymentOrderIdNameResponse(
                 orderId = element.select("orderid").text().toLongOrNull() ?: 0L,
-                orderNum = element.select("ordernum").text() ?: "",
+                orderNum = element.select("ordernum").text(),
             )
         }
     }
@@ -400,7 +413,7 @@ object SoapParser {
         return PaymentResponse(
             recordId = element.select("recordid").text().toLongOrNull() ?: 0L,
             parentRecordId = element.select("parentrecordid").text().toLongOrNull() ?: 0L,
-            agrmId = element.select("agrmid").text() ?: "",
+            agrmId = element.select("agrmid").text(),
             modPerson = element.select("modperson").text().toLongOrNull() ?: 0L,
             currId = element.select("currid").text().toLongOrNull() ?: 0L,
             orderId = element.select("orderid").text().toLongOrNull() ?: 0L,
@@ -411,40 +424,40 @@ object SoapParser {
             revNo = element.select("revno").text().toLongOrNull() ?: 0L,
             revisions = element.select("revisions").text().toLongOrNull() ?: 0L,
             cashCode = element.select("cashcode").text().toLongOrNull() ?: 0L,
-            className = element.select("classname").text() ?: "",
-            payDate = element.select("paydate").text() ?: "",
-            localDate = element.select("localdate").text() ?: "",
-            cancelDate = element.select("canceldate").text() ?: "",
-            periodDate = element.select("perioddate").text() ?: "",
-            receipt = element.select("receipt").text() ?: "",
-            comment = element.select("comment").text() ?: "",
-            uuid = element.select("uuid").text() ?: "",
-            fromAgrmNumber = element.select("fromagrmnumber").text() ?: "",
-            paymentOrderNumber = element.select("paymentordernumber").text() ?: "",
+            className = element.select("classname").text(),
+            payDate = element.select("paydate").text(),
+            localDate = element.select("localdate").text(),
+            cancelDate = element.select("canceldate").text(),
+            periodDate = element.select("perioddate").text(),
+            receipt = element.select("receipt").text(),
+            comment = element.select("comment").text(),
+            uuid = element.select("uuid").text(),
+            fromAgrmNumber = element.select("fromagrmnumber").text(),
+            paymentOrderNumber = element.select("paymentordernumber").text(),
         )
     }
 
     private fun parseSoapUprsPayment(element: Element): UprsPaymentResponse {
         return UprsPaymentResponse(
-            uprsCurrency = element.select("uprscurrency").text() ?: "",
-            paymentDate = element.select("paymentdate").text() ?: "",
-            agentAcceptedDate = element.select("agentaccepteddate").text() ?: "",
-            acceptedDate = element.select("accepteddate").text() ?: "",
+            uprsCurrency = element.select("uprscurrency").text(),
+            paymentDate = element.select("paymentdate").text(),
+            agentAcceptedDate = element.select("agentaccepteddate").text(),
+            acceptedDate = element.select("accepteddate").text(),
             agentOperationId = element.select("agentoperationid").text().toLongOrNull() ?: 0L,
             paymentToolType = element.select("paymenttooltype").text().toLongOrNull() ?: 0L,
-            paymentToolNumber = element.select("paymenttoolnumber").text() ?: "",
+            paymentToolNumber = element.select("paymenttoolnumber").text(),
             checkNumber = element.select("checknumber").text().toLongOrNull() ?: 0L,
-            terminalNumber = element.select("terminalnumber").text() ?: "",
-            agentSystemCode = element.select("agentsystemcode").text() ?: "",
-            agentName = element.select("agentname").text() ?: "",
-            subscriberId = element.select("subscriberid").text() ?: "",
-            terminalId = element.select("terminalid").text() ?: "",
-            terminalAddress = element.select("terminaladdress").text() ?: "",
-            payerBankAccount = element.select("payerbankaccount").text() ?: "",
-            payerBankName = element.select("payerbankname").text() ?: "",
-            payerBik = element.select("payerbik").text() ?: "",
-            payerBankAddress = element.select("payerbankaddress").text() ?: "",
-            more = element.select("more").text() ?: "",
+            terminalNumber = element.select("terminalnumber").text(),
+            agentSystemCode = element.select("agentsystemcode").text(),
+            agentName = element.select("agentname").text(),
+            subscriberId = element.select("subscriberid").text(),
+            terminalId = element.select("terminalid").text(),
+            terminalAddress = element.select("terminaladdress").text(),
+            payerBankAccount = element.select("payerbankaccount").text(),
+            payerBankName = element.select("payerbankname").text(),
+            payerBik = element.select("payerbik").text(),
+            payerBankAddress = element.select("payerbankaddress").text(),
+            more = element.select("more").text(),
         )
     }
 
@@ -671,16 +684,16 @@ object SoapParser {
                 currId = retElement.select("currid").text().toLongOrNull() ?: 0L,
                 debt = retElement.select("debt").text().toDoubleOrNull() ?: 0.0,
                 amount = retElement.select("amount").text().toDoubleOrNull() ?: 0.0,
-                promiseDate = retElement.select("promdate").text() ?: "",
-                promiseTill = retElement.select("promtill").text() ?: "",
-                symbol = retElement.select("symbol").text() ?: "",
-                username = retElement.select("username").text() ?: "",
-                agrmNum = retElement.select("agrmnum").text() ?: "",
+                promiseDate = retElement.select("promdate").text(),
+                promiseTill = retElement.select("promtill").text(),
+                symbol = retElement.select("symbol").text(),
+                username = retElement.select("username").text(),
+                agrmNum = retElement.select("agrmnum").text(),
                 status = retElement.select("status").text().toIntOrNull() ?: 0,
                 modPerson = retElement.select("modperson").text().toLongOrNull() ?: 0L,
                 cancelPerson = retElement.select("cancelperson").text().toLongOrNull() ?: 0L,
-                modFio = retElement.select("modfio").text() ?: "",
-                cancelFio = retElement.select("cancelfio").text() ?: "",
+                modFio = retElement.select("modfio").text(),
+                cancelFio = retElement.select("cancelfio").text(),
                 fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
             )
         }
@@ -703,7 +716,7 @@ object SoapParser {
     }
 
     fun parseFaultString(xml: String?): String? {
-       // val regex = Regex("<faultstring>(.*?)</faultstring>", RegexOption.DOT_MATCHES_ALL)
+        // val regex = Regex("<faultstring>(.*?)</faultstring>", RegexOption.DOT_MATCHES_ALL)
         val detail = Regex("<detail>(.*?)</detail>", RegexOption.DOT_MATCHES_ALL)
         return xml?.let { detail.find(it)?.groupValues?.get(1) }
     }

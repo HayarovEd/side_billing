@@ -6,13 +6,14 @@ import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAccountResponse
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.MacStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
+import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.Payment
-import com.impuls.billing.side_billing.model.out_dto.dto.PaymentOrder
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 import com.impuls.billing.side_billing.model.out_dto.dto.Tarif
@@ -20,7 +21,6 @@ import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TariffsSettingsRentAsService
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
-import com.impuls.billing.side_billing.model.out_dto.dto.UprsPayment
 
 
 fun GetClientAccountResponse.toClientAccount(): ClientAccount {
@@ -284,6 +284,16 @@ fun TarifFullResponse.toTarifFull(): TarifFullDto {
             usrBlockRent = settingsRentAsService.usrBlockRent,
             admBlockRent = settingsRentAsService.admBlockRent,
         )
+    )
+}
+
+fun MacStaffResponse.toMacStaff(): MacStaffDto {
+    return MacStaffDto(
+        macId = macId,
+        recordId = recordId,
+        vgId = vgId,
+        segment = segment,
+        mac = mac
     )
 }
 

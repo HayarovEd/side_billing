@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
@@ -83,6 +84,17 @@ class HomeInternetController(
         return homeInternetService.deleteClientTarifsRasp(
             authHeader = authHeader,
             id = id
+        )
+    }
+
+    @GetMapping("/mac")
+    fun getMacStaff(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "id", required = false) id: Long,
+    ): Mono<List<MacStaffDto>> {
+        return homeInternetService.getMacStaff(
+            authHeader = authHeader,
+            id = id,
         )
     }
 

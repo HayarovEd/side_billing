@@ -1,10 +1,12 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
+import com.impuls.billing.side_billing.utils.toMacStaff
 import com.impuls.billing.side_billing.utils.toTarifFull
 import com.impuls.billing.side_billing.utils.toTarifsHistory
 import com.impuls.billing.side_billing.utils.toTarifsStaff
@@ -155,6 +157,31 @@ class HomeInternetBillingService(
                 response.body?.let { body ->
                     println(body)
                     SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+    fun getMacStaff(
+        sessionId: String,
+        id: Long,
+    ): Mono<List<MacStaffDto>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "      <urn:getMacStaff>\n" +
+                            "         <id>$id</id>\n" +
+                            "      </urn:getMacStaff>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseFullMacStuffResponse(body).map { it.toMacStaff() }
                 }
             }
         )
