@@ -703,8 +703,9 @@ object SoapParser {
     }
 
     fun parseFaultString(xml: String?): String? {
-        val regex = Regex("<faultstring>(.*?)</faultstring>", RegexOption.DOT_MATCHES_ALL)
-        return xml?.let { regex.find(it)?.groupValues?.get(1) }
+       // val regex = Regex("<faultstring>(.*?)</faultstring>", RegexOption.DOT_MATCHES_ALL)
+        val detail = Regex("<detail>(.*?)</detail>", RegexOption.DOT_MATCHES_ALL)
+        return xml?.let { detail.find(it)?.groupValues?.get(1) }
     }
 
     fun setBaseAppend(innerContent: String): String {

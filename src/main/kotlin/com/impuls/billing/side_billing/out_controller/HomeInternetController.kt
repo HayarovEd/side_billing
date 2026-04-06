@@ -1,10 +1,12 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.model.out_dto.request.RaspRequest
 import com.impuls.billing.side_billing.repository.HomeInternetService
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -73,5 +75,15 @@ class HomeInternetController(
         )
     }
 
+    @DeleteMapping("/tariff/rasp/{id}")
+    fun deleteClientTarifsRasp(
+        @RequestHeader("Authorization") authHeader: String,
+        @PathVariable("id") id: Long,
+    ): Mono<ResultSuccessDto> {
+        return homeInternetService.deleteClientTarifsRasp(
+            authHeader = authHeader,
+            id = id
+        )
+    }
 
 }

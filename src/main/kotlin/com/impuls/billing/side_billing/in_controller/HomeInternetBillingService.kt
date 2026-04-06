@@ -134,4 +134,29 @@ class HomeInternetBillingService(
             }
         )
     }
+
+    fun deleteClientTarifsRasp(
+        sessionId: String,
+        id: Long,
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:delClientTarifsRasp>\n" +
+                            "         <id>$id</id>\n" +
+                            "      </urn:delClientTarifsRasp>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
 }
