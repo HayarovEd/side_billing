@@ -244,4 +244,36 @@ class HomeInternetBillingService(
             }
         )
     }
+
+    fun insertClientUsboxService(
+        sessionId: String,
+        vgId: Long,
+        tarId: Long,
+        catIdx: Long,
+        mui: Double,
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:insupdClientUsboxService>\n" +
+                            "         <val>\n" +
+                            "            <vgid>$vgId</vgid>\n" +
+                            "            <tarid>$tarId</tarid>\n" +
+                            "            <catidx>$catIdx</catidx>\n" +
+                            "            <mul>$mui</mul>\n" +
+                            "         </val>\n" +
+                            "      </urn:insupdClientUsboxService>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
 }

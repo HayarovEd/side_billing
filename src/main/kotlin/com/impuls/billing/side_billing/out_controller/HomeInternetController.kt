@@ -3,11 +3,13 @@ package com.impuls.billing.side_billing.out_controller
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
+import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessLongDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.model.out_dto.request.MacRequest
 import com.impuls.billing.side_billing.model.out_dto.request.RaspRequest
+import com.impuls.billing.side_billing.model.out_dto.request.UsboxServiceRequest
 import com.impuls.billing.side_billing.repository.HomeInternetService
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -124,5 +126,18 @@ class HomeInternetController(
         )
     }
 
+    @PostMapping("/service")
+    fun insertClientUsboxService(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody body: UsboxServiceRequest
+    ): Mono<ResultSuccessLongDto> {
+        return homeInternetService.insertClientUsboxService(
+            authHeader = authHeader,
+            vgId = body.vgId,
+            tarId = body.tarId,
+            catIdx = body.catIdx,
+            mui = body.mui,
+        )
+    }
 
 }
