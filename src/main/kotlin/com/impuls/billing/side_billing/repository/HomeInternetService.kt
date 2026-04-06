@@ -39,12 +39,14 @@ class HomeInternetService(
 
     fun getTarifsHistory(
         authHeader: String,
+        vgId: Long?,
     ): Mono<List<TarifsHistoryDto>> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
             monoMapper({
                 homeInternetBillingService.getTarifsHistory(
                     sessionId = it.sessionId,
+                    vgId = vgId,
                 )
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)

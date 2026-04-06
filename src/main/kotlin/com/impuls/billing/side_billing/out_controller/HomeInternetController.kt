@@ -42,9 +42,11 @@ class HomeInternetController(
     @GetMapping("/tariff/history")
     fun getTarifsHistory(
         @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgid", required = false) vgId: Long?,
     ): Mono<List<TarifsHistoryDto>> {
         return homeInternetService.getTarifsHistory(
             authHeader = authHeader,
+            vgId = vgId,
         )
     }
 

@@ -55,12 +55,15 @@ class HomeInternetBillingService(
 
     fun getTarifsHistory(
         sessionId: String,
+        vgId: Long?,
     ): Mono<List<TarifsHistoryDto>> {
+        val vgIdString = vgId?.toString() ?: ""
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
                     " <urn:getTarifsHistory>\n" +
                             "         <flt>\n" +
+                            "         <vgid>$vgIdString</vgid>\n" +
                             "         </flt>\n" +
                             "      </urn:getTarifsHistory>\n"
                 )
