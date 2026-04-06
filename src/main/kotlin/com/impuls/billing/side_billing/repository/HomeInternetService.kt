@@ -118,4 +118,25 @@ class HomeInternetService(
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
+
+
+    fun insertMacStaff(
+        authHeader: String,
+        id: Long,
+        mac: String,
+    ): Mono<ResultSuccessDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                val result = homeInternetBillingService.insertMacStaff(
+                    sessionId = it.sessionId,
+                    id = id,
+                    mac = mac
+                )
+                result.map { header ->
+                    ResultSuccessDto(header == 1L)
+                }
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
 }

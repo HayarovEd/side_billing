@@ -5,6 +5,7 @@ import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
+import com.impuls.billing.side_billing.model.out_dto.request.MacRequest
 import com.impuls.billing.side_billing.model.out_dto.request.RaspRequest
 import com.impuls.billing.side_billing.repository.HomeInternetService
 import org.springframework.web.bind.annotation.DeleteMapping
@@ -95,6 +96,19 @@ class HomeInternetController(
         return homeInternetService.getMacStaff(
             authHeader = authHeader,
             id = id,
+        )
+    }
+
+
+    @PostMapping("/mac")
+    fun insertMacStaff(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody body: MacRequest
+    ): Mono<ResultSuccessDto> {
+        return homeInternetService.insertMacStaff(
+            authHeader = authHeader,
+            id = body.id,
+            mac = body.mac,
         )
     }
 

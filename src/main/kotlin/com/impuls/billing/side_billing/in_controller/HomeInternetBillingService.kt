@@ -186,4 +186,33 @@ class HomeInternetBillingService(
             }
         )
     }
+
+    fun insertMacStaff(
+        sessionId: String,
+        id: Long,
+        mac: String,
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "  <urn:insupdMacStaff>\n" +
+                            "         <val>\n" +
+                            "            <vgid>$id</vgid>\n" +
+                            "            <mac>$mac</mac>\n" +
+                            "         </val>\n" +
+                            "      </urn:insupdMacStaff>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
 }
