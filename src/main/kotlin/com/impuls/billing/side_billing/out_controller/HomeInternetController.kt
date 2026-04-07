@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -164,4 +165,22 @@ class HomeInternetController(
             notusBox = 1L
         )
     }
+
+    @GetMapping("/short_statistics")
+    fun getClientStatByTimePeriod(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgId", required = true) vgId: Long,
+        @RequestParam(name = "repDetail", required = true) repDetail: Long, //Вид детализации (единица времени): 1 — по дням, 2 — по часам, 3— по месяцам, 0 — весь период
+        @RequestParam(name = "dtFrom", required = true) dtFrom: String,
+        @RequestParam(name = "dtTo", required = true) dtTo: String,
+    ): Mono<List<ClientShortStat>> {
+        return homeInternetService.getClientStatByTimePeriod(
+            authHeader = authHeader,
+            vgId = vgId,
+            repDetail = repDetail,
+            dtFrom = dtFrom,
+            dtTo = dtTo
+        )
+    }
+
 }

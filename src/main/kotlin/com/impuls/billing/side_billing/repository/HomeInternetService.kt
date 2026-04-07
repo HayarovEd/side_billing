@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
+import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -219,5 +220,27 @@ class HomeInternetService(
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
+
+    fun getClientStatByTimePeriod(
+        authHeader: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientShortStat>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                homeInternetBillingService.getClientStatByTimePeriod(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                    dtFrom = dtFrom,
+                    dtTo = dtTo,
+                    repDetail = repDetail,
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
 
 }

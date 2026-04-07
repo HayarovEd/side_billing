@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -7,6 +8,7 @@ import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
 import com.impuls.billing.side_billing.utils.SoapParser
+import com.impuls.billing.side_billing.utils.StatParser
 import com.impuls.billing.side_billing.utils.handler
 import com.impuls.billing.side_billing.utils.toAvailableService
 import com.impuls.billing.side_billing.utils.toMacStaff
@@ -330,5 +332,39 @@ class HomeInternetBillingService(
                     SoapParser.parseSetClientInfoResponse(body)
                 }
             }
-        )}
+        )
+    }
+
+    fun getClientStatByTimePeriod(
+        sessionId: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientShortStat>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientStat>\n" +
+                            "         <flt>\n" +
+                            "          <repnum>1</repnum>\n" +
+                            "          <vgid>$vgId</vgid>\n" +
+                            "          <repdetail>$repDetail</repdetail>\n" +
+                            "          <dtfrom>$dtFrom</dtfrom>\n" +
+                            "          <dtto>$dtTo</dtto>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientStat>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    StatParser.parseClientShortStat(body)
+                }
+            }
+        )
+    }
 }
