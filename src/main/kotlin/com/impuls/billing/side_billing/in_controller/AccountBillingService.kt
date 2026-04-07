@@ -210,4 +210,30 @@ class AccountBillingService(
             }
         )
     }
+
+    fun updateClientPassword(
+        sessionId: String,
+        newPassword: String,
+        oldPassword: String,
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:updClientPass>\n" +
+                            "<oldpass>$oldPassword</oldpass>\n" +
+                            "<newpass>$newPassword</newpass>\n" +
+                            "</urn:updClientPass>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
 }

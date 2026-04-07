@@ -4,5 +4,5 @@ data class BlockRequest(
     val vgId: Long,
     val agrmId: Long,
     val changeTime: String,
-    val blkReq: Long,
+    val blkReq: Long, //0 - разблокировать, 2 - заблокировать
 )

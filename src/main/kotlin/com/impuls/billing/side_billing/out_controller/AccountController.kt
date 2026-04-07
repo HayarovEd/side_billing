@@ -2,22 +2,15 @@ package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
-import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
 import com.impuls.billing.side_billing.model.out_dto.request.EmailUpdateRequest
 import com.impuls.billing.side_billing.model.out_dto.request.PhoneUpdateRequest
+import com.impuls.billing.side_billing.model.out_dto.request.UpdatePasswordRequest
 import com.impuls.billing.side_billing.model.out_dto.request.ValidationRequest
 import com.impuls.billing.side_billing.repository.AccountService
 import jakarta.validation.Valid
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import reactor.core.publisher.Mono
 
 @RestController
@@ -126,5 +119,16 @@ class AccountController(
         )
     }
 
+    @PostMapping("/password")
+    fun updateClientPassword(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody body: UpdatePasswordRequest
+    ): Mono<ResultSuccessDto> {
+        return accountService.updateClientPassword(
+            authHeader = authHeader,
+            oldPassword = body.oldPassword,
+            newPassword = body.newPassword,
+        )
+    }
 
 }

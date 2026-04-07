@@ -6,7 +6,6 @@ import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
-import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
 import com.impuls.billing.side_billing.utils.monoMapper
 import org.springframework.http.HttpStatus
@@ -44,7 +43,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ResultSuccessDto(header == 1L)
                         }
@@ -70,7 +68,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ResultSuccessDto(header == 1L)
                         }
@@ -91,7 +88,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ValidationDto(recordNumber = header)
                         }
@@ -112,7 +108,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ValidationDto(recordNumber = header)
                         }
@@ -138,7 +133,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ResultSuccessDto(header == 1L)
                         }
@@ -164,7 +158,6 @@ class AccountService(
                 )
                 result.map { header ->
                     when (header) {
-                        null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
                         else -> {
                             ResultSuccessDto(header == 1L)
                         }
@@ -202,6 +195,26 @@ class AccountService(
                     agrmid = agrmid,
                 )
             })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun updateClientPassword(
+        authHeader: String,
+        newPassword: String,
+        oldPassword: String,
+    ): Mono<ResultSuccessDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            val result =  monoMapper({
+                accountBillingService.updateClientPassword(
+                    sessionId = it.sessionId,
+                    oldPassword = oldPassword,
+                    newPassword = newPassword
+                )
+            })
+            result.map { header ->
+                ResultSuccessDto(header == 1L)
+            }
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
