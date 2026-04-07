@@ -194,6 +194,7 @@ class AccountBillingService(
                     "<urn:getClientVgroups>\n" +
                             "         <flt>\n" +
                             "          <agrmid>$agrmidStr</agrmid>\n" +
+                            "          <nodetails>0</nodetails>\n" +
                             "         </flt>\n" +
                             "      </urn:getClientVgroups>\n"
                 )
