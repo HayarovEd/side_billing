@@ -5,4 +5,5 @@ data class UsboxServiceRequest(
     val tarId: Long,
     val catIdx: Long,
     val mui: Double,
+    val notusBox: Long = 1,
 )

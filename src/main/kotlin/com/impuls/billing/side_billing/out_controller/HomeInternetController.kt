@@ -138,6 +138,7 @@ class HomeInternetController(
             tarId = body.tarId,
             catIdx = body.catIdx,
             mui = body.mui,
+            notusBox = body.notusBox
         )
     }
 
@@ -149,6 +150,18 @@ class HomeInternetController(
         return homeInternetService.getUsboxServices(
             authHeader = authHeader,
             vgId = vgId,
+        )
+    }
+
+    @DeleteMapping("/service/{id}")
+    fun deleteUsboxService(
+        @RequestHeader("Authorization") authHeader: String,
+        @PathVariable("id") id: Long,
+    ): Mono<ResultSuccessDto> {
+        return homeInternetService.deleteUsboxService(
+            authHeader = authHeader,
+            servId = id,
+            notusBox = 1L
         )
     }
 }

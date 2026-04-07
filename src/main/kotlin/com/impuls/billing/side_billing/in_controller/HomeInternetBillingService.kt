@@ -252,6 +252,7 @@ class HomeInternetBillingService(
         tarId: Long,
         catIdx: Long,
         mui: Double,
+        notusBox: Long
     ): Mono<Long> {
         val soapRequest = buildString {
             append(
@@ -262,6 +263,7 @@ class HomeInternetBillingService(
                             "            <tarid>$tarId</tarid>\n" +
                             "            <catidx>$catIdx</catidx>\n" +
                             "            <mul>$mui</mul>\n" +
+                            "            <notusbox>$notusBox</notusbox>\n" +
                             "         </val>\n" +
                             "      </urn:insupdClientUsboxService>\n"
                 )
@@ -304,4 +306,29 @@ class HomeInternetBillingService(
             }
         )
     }
+
+    fun deleteUsboxService(
+        sessionId: String,
+        servId: Long,
+        notusBox: Long,
+    ): Mono<Long> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:delUsboxService>\n" +
+                            "         <id>$servId</id>\n" +
+                            "         <notusbox>$notusBox</notusbox>\n"+
+                            "      </urn:delUsboxService>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )}
 }

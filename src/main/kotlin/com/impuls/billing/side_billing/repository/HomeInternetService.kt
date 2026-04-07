@@ -164,6 +164,7 @@ class HomeInternetService(
         tarId: Long,
         catIdx: Long,
         mui: Double,
+        notusBox: Long,
     ): Mono<ResultSuccessLongDto> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
@@ -174,6 +175,7 @@ class HomeInternetService(
                     tarId = tarId,
                     catIdx = catIdx,
                     mui = mui,
+                    notusBox = notusBox
                 )
                 result.map { header ->
                     ResultSuccessLongDto(header)
@@ -197,5 +199,25 @@ class HomeInternetService(
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
+
+    fun deleteUsboxService(
+        authHeader: String,
+        servId: Long,
+        notusBox: Long,
+    ): Mono<ResultSuccessDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                val result = homeInternetBillingService.deleteUsboxService(
+                    sessionId = it.sessionId,
+                    servId = servId,
+                    notusBox = notusBox
+                )
+                result.map { header ->
+                    ResultSuccessDto(header == 1L)
+                }
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
 
 }

@@ -32,7 +32,6 @@ import com.impuls.billing.side_billing.model.in_dto.client_vgroup.VgroupAddonRes
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TariffsSettingsRentAsServiceResponse
-import com.impuls.billing.side_billing.model.in_dto.usbox_service.TariffModifierResponse
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceResponse
 import org.jsoup.Jsoup
@@ -46,9 +45,11 @@ object SoapParser {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElements = doc.select("ret")
         return retElements.map { retElement ->
-            val serviceElement = retElement.select("vgroup").first()!!
+            val serviceElement = retElement.select("service").first()!!
+            println(serviceElement.text())
             val currentModifierElement = retElement.select("currentmodifier").first()!!
-            val tarifModifierElement = serviceElement.select("modifiers").first()!!
+            println(currentModifierElement.text())
+         //   val tarifModifierElement = serviceElement.select("modifiers").first()!!
             UsboxServiceFull(
                 service = UsboxServiceResponse(
                     notusbox = serviceElement.select("notusbox").text().toLongOrNull() ?: 0,
@@ -76,7 +77,7 @@ object SoapParser {
                     discounttimefrom = serviceElement.select("discounttimefrom").text(),
                     discounttimeto = serviceElement.select("discounttimeto").text(),
                     externaldata = serviceElement.select("externaldata").text(),
-                    modifiers = TariffModifierResponse(
+                   /* modifiers = TariffModifierResponse(
                         recordId = tarifModifierElement.select("recordid").text().toLongOrNull() ?: 0,
                         tarId = tarifModifierElement.select("tarid").text().toLongOrNull() ?: 0,
                         servId = tarifModifierElement.select("servid").text().toLongOrNull() ?: 0,
@@ -97,7 +98,7 @@ object SoapParser {
                         timeFrom = tarifModifierElement.select("timefrom").text(),
                         timeTo = tarifModifierElement.select("timeto").text(),
                         name = tarifModifierElement.select("name").text(),
-                    )
+                    )*/
                 ),
                 technicalService = retElement.select("technicalservice").text().toShortOrNull() ?: 0,
                 isAssignedIp = retElement.select("isassignedip").text().toLongOrNull() ?: 0,

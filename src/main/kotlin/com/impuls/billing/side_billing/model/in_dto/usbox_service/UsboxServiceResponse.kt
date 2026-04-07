@@ -149,5 +149,5 @@ data class UsboxServiceResponse(
     /**
      * Параметры скидки на услугу
      */
-    val modifiers: TariffModifierResponse
+    //val modifiers: TariffModifierResponse
 )
