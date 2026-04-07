@@ -1,6 +1,8 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientIpStat
 import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
+import com.impuls.billing.side_billing.model.in_dto.ClientTarifStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -221,7 +223,6 @@ class HomeInternetBillingService(
     }
 
 
-
     fun getAvailableServicesForVgroup(
         sessionId: String,
         vgId: Long,
@@ -319,7 +320,7 @@ class HomeInternetBillingService(
                 SoapParser.setBaseAppend(
                     " <urn:delUsboxService>\n" +
                             "         <id>$servId</id>\n" +
-                            "         <notusbox>$notusBox</notusbox>\n"+
+                            "         <notusbox>$notusBox</notusbox>\n" +
                             "      </urn:delUsboxService>\n"
                 )
             )
@@ -363,6 +364,72 @@ class HomeInternetBillingService(
             bodyFunction = { response ->
                 response.body?.let { body ->
                     StatParser.parseClientShortStat(body)
+                }
+            }
+        )
+    }
+
+    fun getClientTarifStatByTimePeriod(
+        sessionId: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientTarifStat>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientStat>\n" +
+                            "         <flt>\n" +
+                            "          <repnum>3</repnum>\n" +
+                            "          <vgid>$vgId</vgid>\n" +
+                            "          <repdetail>$repDetail</repdetail>\n" +
+                            "          <dtfrom>$dtFrom</dtfrom>\n" +
+                            "          <dtto>$dtTo</dtto>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientStat>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    StatParser.parseClientTarifStat(body)
+                }
+            }
+        )
+    }
+
+    fun getClientIpStatByTimePeriod(
+        sessionId: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientIpStat>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientStat>\n" +
+                            "         <flt>\n" +
+                            "          <repnum>3</repnum>\n" +
+                            "          <vgid>$vgId</vgid>\n" +
+                            "          <repdetail>$repDetail</repdetail>\n" +
+                            "          <dtfrom>$dtFrom</dtfrom>\n" +
+                            "          <dtto>$dtTo</dtto>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientStat>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    StatParser.parseClientIpStat(body)
                 }
             }
         )

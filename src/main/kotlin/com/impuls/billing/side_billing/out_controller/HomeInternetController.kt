@@ -1,6 +1,8 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientIpStat
 import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
+import com.impuls.billing.side_billing.model.in_dto.ClientTarifStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -178,6 +180,38 @@ class HomeInternetController(
             authHeader = authHeader,
             vgId = vgId,
             repDetail = repDetail,
+            dtFrom = dtFrom,
+            dtTo = dtTo
+        )
+    }
+
+    @GetMapping("/tarifStatistics")
+    fun getClientTarifStatByTimePeriod(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgId", required = true) vgId: Long,
+        @RequestParam(name = "dtFrom", required = true) dtFrom: String,
+        @RequestParam(name = "dtTo", required = true) dtTo: String,
+    ): Mono<List<ClientTarifStat>> {
+        return homeInternetService.getClientTarifStatByTimePeriod(
+            authHeader = authHeader,
+            vgId = vgId,
+            repDetail = 1,
+            dtFrom = dtFrom,
+            dtTo = dtTo
+        )
+    }
+
+    @GetMapping("/ipStatistics")
+    fun getClientIpStatByTimePeriod(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgId", required = true) vgId: Long,
+        @RequestParam(name = "dtFrom", required = true) dtFrom: String,
+        @RequestParam(name = "dtTo", required = true) dtTo: String,
+    ): Mono<List<ClientIpStat>> {
+        return homeInternetService.getClientIpStatByTimePeriod(
+            authHeader = authHeader,
+            vgId = vgId,
+            repDetail = 1,
             dtFrom = dtFrom,
             dtTo = dtTo
         )

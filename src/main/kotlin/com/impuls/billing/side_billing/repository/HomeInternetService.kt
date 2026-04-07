@@ -2,7 +2,9 @@ package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
+import com.impuls.billing.side_billing.model.in_dto.ClientIpStat
 import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
+import com.impuls.billing.side_billing.model.in_dto.ClientTarifStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
@@ -242,5 +244,47 @@ class HomeInternetService(
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
+
+    fun getClientTarifStatByTimePeriod(
+        authHeader: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientTarifStat>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                homeInternetBillingService.getClientTarifStatByTimePeriod(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                    dtFrom = dtFrom,
+                    dtTo = dtTo,
+                    repDetail = repDetail,
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun getClientIpStatByTimePeriod(
+        authHeader: String,
+        vgId: Long,
+        repDetail: Long,
+        dtFrom: String,
+        dtTo: String,
+    ): Mono<List<ClientIpStat>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                homeInternetBillingService.getClientIpStatByTimePeriod(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                    dtFrom = dtFrom,
+                    dtTo = dtTo,
+                    repDetail = repDetail,
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
 
 }
