@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
@@ -140,4 +141,14 @@ class HomeInternetController(
         )
     }
 
+    @GetMapping("/service")
+    fun getUsboxServices(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgId", required = true) vgId: Long,
+    ): Mono<List<UsboxServiceFull>> {
+        return homeInternetService.getUsboxServices(
+            authHeader = authHeader,
+            vgId = vgId,
+        )
+    }
 }

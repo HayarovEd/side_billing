@@ -32,6 +32,9 @@ import com.impuls.billing.side_billing.model.in_dto.client_vgroup.VgroupAddonRes
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TariffsSettingsRentAsServiceResponse
+import com.impuls.billing.side_billing.model.in_dto.usbox_service.TariffModifierResponse
+import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
+import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceResponse
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.jsoup.parser.Parser
@@ -39,6 +42,98 @@ import org.jsoup.select.Elements
 
 object SoapParser {
 
+    fun parseUsboxServiceFull(xmlString: String): List<UsboxServiceFull> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement ->
+            val serviceElement = retElement.select("vgroup").first()!!
+            val currentModifierElement = retElement.select("currentmodifier").first()!!
+            val tarifModifierElement = serviceElement.select("modifiers").first()!!
+            UsboxServiceFull(
+                service = UsboxServiceResponse(
+                    notusbox = serviceElement.select("notusbox").text().toLongOrNull() ?: 0,
+                    servid = serviceElement.select("servid").text().toLongOrNull() ?: 0,
+                    vgid = serviceElement.select("vgid").text().toLongOrNull() ?: 0,
+                    tarid = serviceElement.select("tarid").text().toLongOrNull() ?: 0,
+                    catidx = serviceElement.select("catidx").text().toLongOrNull() ?: 0,
+                    needcalc = serviceElement.select("needcalc").text().toLongOrNull() ?: 0,
+                    noduplicate = serviceElement.select("noduplicate").text().toLongOrNull() ?: 0,
+                    planid = serviceElement.select("planid").text().toLongOrNull() ?: 0,
+                    installmentduration = serviceElement.select("installmentduration").text().toLongOrNull() ?: 0,
+                    state = serviceElement.select("state").text().toLongOrNull() ?: 0,
+                    blocked = serviceElement.select("blocked").text().toLongOrNull() ?: 0,
+                    installmentfirstpayment = serviceElement.select("installmentfirstpayment").text().toDoubleOrNull() ?: 0.0,
+                    mul = serviceElement.select("mul").text().toDoubleOrNull() ?: 0.0,
+                    rate = serviceElement.select("rate").text().toDoubleOrNull() ?: 0.0,
+                    discount = serviceElement.select("discount").text().toDoubleOrNull() ?: 0.0,
+                    blockdiscount = serviceElement.select("blockdiscount").text().toDoubleOrNull() ?: 0.0,
+                    personid = serviceElement.select("personid").text(),
+                    comment = serviceElement.select("comment").text(),
+                    created = serviceElement.select("created").text(),
+                    timefrom = serviceElement.select("timefrom").text(),
+                    timeto = serviceElement.select("timeto").text(),
+                    activated = serviceElement.select("activated").text(),
+                    discounttimefrom = serviceElement.select("discounttimefrom").text(),
+                    discounttimeto = serviceElement.select("discounttimeto").text(),
+                    externaldata = serviceElement.select("externaldata").text(),
+                    modifiers = TariffModifierResponse(
+                        recordId = tarifModifierElement.select("recordid").text().toLongOrNull() ?: 0,
+                        tarId = tarifModifierElement.select("tarid").text().toLongOrNull() ?: 0,
+                        servId = tarifModifierElement.select("servid").text().toLongOrNull() ?: 0,
+                        serviceId = tarifModifierElement.select("serviceid").text().toLongOrNull() ?: 0,
+                        vgId = tarifModifierElement.select("vgid").text().toLongOrNull() ?: 0,
+                        keepModifier = tarifModifierElement.select("keepmodifier").text().toLongOrNull() ?: 0,
+                        userPacketId = tarifModifierElement.select("userpacketid").text().toLongOrNull() ?: 0,
+                        actionStaffId = tarifModifierElement.select("actionstaffid").text().toLongOrNull() ?: 0,
+                        tarifsRaspId = tarifModifierElement.select("tarifsraspid").text().toLongOrNull() ?: 0,
+                        blockState = tarifModifierElement.select("blockstate").text().toLongOrNull() ?: 0,
+                        parentRecordId = tarifModifierElement.select("parentrecordid").text().toLongOrNull() ?: 0,
+                        personId = tarifModifierElement.select("personid").text().toLongOrNull() ?: 0,
+                        rent = tarifModifierElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                        blockRent = tarifModifierElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
+                        rate = tarifModifierElement.select("rate").text().toDoubleOrNull() ?: 0.0,
+                        discount = tarifModifierElement.select("discount").text().toDoubleOrNull() ?: 0.0,
+                        blockDiscount = tarifModifierElement.select("blockdiscount").text().toDoubleOrNull() ?: 0.0,
+                        timeFrom = tarifModifierElement.select("timefrom").text(),
+                        timeTo = tarifModifierElement.select("timeto").text(),
+                        name = tarifModifierElement.select("name").text(),
+                    )
+                ),
+                technicalService = retElement.select("technicalservice").text().toShortOrNull() ?: 0,
+                isAssignedIp = retElement.select("isassignedip").text().toLongOrNull() ?: 0,
+                isAssignedPhone = retElement.select("isassignedphone").text().toLongOrNull() ?: 0,
+                used = retElement.select("used").text().toLongOrNull() ?: 0,
+                agrmId = retElement.select("agrmid").text().toLongOrNull() ?: 0,
+                uid = retElement.select("uid").text().toLongOrNull() ?: 0,
+                common = retElement.select("common").text().toLongOrNull() ?: 0,
+                smartCardId = retElement.select("smartcardid").text().toLongOrNull() ?: 0,
+                available = retElement.select("available").text().toLongOrNull() ?: 0,
+                availableForManager = retElement.select("availableformanager").text().toLongOrNull() ?: 0,
+                autoAssign = retElement.select("autoassign").text().toLongOrNull() ?: 0,
+                serviceCatId = retElement.select("servicecatid").text().toLongOrNull() ?: 0,
+                isUnique = retElement.select("isunique").text().toLongOrNull() ?: 0,
+                catAbove = retElement.select("catabove").text().toDoubleOrNull() ?: 0.0,
+                includeAbove = retElement.select("includeabove").text().toDoubleOrNull() ?: 0.0,
+                totalAmount = retElement.select("totalamount").text().toDoubleOrNull() ?: 0.0,
+                agrmNumber = retElement.select("agrmnumber").text(),
+                username = retElement.select("username").text(),
+                vgLogin = retElement.select("vglogin").text(),
+                tarDescr = retElement.select("tardescr").text(),
+                catDescr = retElement.select("catdescr").text(),
+                personName = retElement.select("personname").text(),
+                smartCardSerial = retElement.select("smartcardserial").text(),
+                acconDate = retElement.select("accondate").text(),
+                symbol = retElement.select("symbol").text(),
+                uuid = retElement.select("uuid").text(),
+                currentModifier = CurrentModifierResponse(
+                    type = currentModifierElement.select("type").text(),
+                    value = currentModifierElement.select("value").text().toDoubleOrNull() ?: 0.0,
+                ),
+                tarType = retElement.select("tartype").text().toShortOrNull() ?: 0,
+                isAssignedPromisePayment = retElement.select("isassignedpromisepayment").text().toBoolean(),
+            )
+        }
+    }
 
     fun parseAvailableServiceResponse(xmlString: String): List<AvailableServiceResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())

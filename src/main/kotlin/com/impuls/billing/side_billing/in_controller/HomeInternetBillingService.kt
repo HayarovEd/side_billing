@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
 import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
@@ -272,6 +273,33 @@ class HomeInternetBillingService(
             bodyFunction = { response ->
                 response.body?.let { body ->
                     SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+
+    fun getUsboxServices(
+        sessionId: String,
+        vgId: Long,
+    ): Mono<List<UsboxServiceFull>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getUsboxServices>\n" +
+                            "         <flt>\n" +
+                            "            <vgid>$vgId</vgid>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getUsboxServices>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseUsboxServiceFull(body)
                 }
             }
         )
