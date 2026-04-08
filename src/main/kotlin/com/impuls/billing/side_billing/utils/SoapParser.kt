@@ -4,6 +4,7 @@ import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
+import com.impuls.billing.side_billing.model.in_dto.SharedPostResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.client_account.AccountDto
@@ -41,6 +42,31 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseSharedPosts(xmlString: String): List<SharedPostResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement ->
+            SharedPostResponse(
+                pid = retElement.select("pid").text().toLongOrNull() ?: 0,
+                postBy = retElement.select("postby").text().toLongOrNull() ?: 0,
+                postTo = retElement.select("postto").text().toLongOrNull() ?: 0,
+                groupId = retElement.select("groupid").text().toLongOrNull() ?: 0,
+                uid = retElement.select("uid").text().toLongOrNull() ?: 0,
+                postTime = retElement.select("posttime").text(),
+                text = retElement.select("text").text(),
+                subject = retElement.select("subject").text(),
+                sentTime = retElement.select("senttime").text(),
+                dtFrom = retElement.select("dtfrom").text(),
+                dtTo = retElement.select("dtto").text(),
+                emails = retElement.select("emails").text(),
+                externUrl = retElement.select("externurl").text(),
+                postCatId = retElement.select("postcatid").text().toLongOrNull() ?: 0,
+                status = retElement.select("status").text().toLongOrNull() ?: 0,
+            )
+        }
+    }
+
 
     fun parseOrderResponse(xmlString: String): List<OrderResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())

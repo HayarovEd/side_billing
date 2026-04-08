@@ -17,7 +17,7 @@ class SwaggerConfig {
             .info(
                 Info().title("Side Billing API")
                     .version("1.0.0")
-                    .description("Документация по Radio API")
+                    .description("Документация по биллингу API")
             )
             .addSecurityItem(SecurityRequirement().addList("bearerAuth"))
             .components(
