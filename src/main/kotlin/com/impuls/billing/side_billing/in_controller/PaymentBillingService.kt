@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.utils.SoapParser
@@ -93,6 +94,37 @@ class PaymentBillingService(
                 response.body?.let { body ->
                     println(body)
                     SoapParser.parseFullSoapPaymentsResponse(body).toClientPayments()
+                }
+            }
+        )
+    }
+
+    fun getClientOrders(
+        sessionId: String,
+        payed: Long, //payed
+        dateTo: String, //dtto
+        dateFrom: String, //dtfrom
+    ): Mono<List<OrderResponse>> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    " <urn:getClientOrders>\n" +
+                            "         <flt>\n" +
+                            "                <dtfrom>$dateFrom</dtfrom>\n" +
+                            "                <dtto>$dateTo</dtto>\n" +
+                            "                 <payed>$payed</payed>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientOrders>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseOrderResponse(body)
                 }
             }
         )

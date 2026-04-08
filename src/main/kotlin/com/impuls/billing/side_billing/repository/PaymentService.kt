@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.PaymentBillingService
+import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
@@ -73,4 +74,24 @@ class PaymentService(
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
+
+    fun getClientOrders(
+        authHeader: String,
+        payed: Long,
+        dateTo: String,
+        dateFrom: String,
+    ): Mono<List<OrderResponse>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                paymentBillingService.getClientOrders(
+                    sessionId = it.sessionId,
+                    payed = payed,
+                    dateTo = dateTo,
+                    dateFrom = dateFrom,
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
 }

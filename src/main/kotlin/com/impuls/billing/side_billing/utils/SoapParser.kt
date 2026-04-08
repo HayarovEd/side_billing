@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
+import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
@@ -40,6 +41,46 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseOrderResponse(xmlString: String): List<OrderResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement ->
+            OrderResponse(
+                orderId = retElement.select("orderid").text().toLongOrNull() ?: 0,
+                agrmId = retElement.select("agrmid").text().toLongOrNull() ?: 0,
+                operId = retElement.select("operid").text().toLongOrNull() ?: 0,
+                docId = retElement.select("docid").text().toLongOrNull() ?: 0,
+                orderNum = retElement.select("ordernum").text(),
+                currSumm = retElement.select("currsumm").text().toDoubleOrNull() ?: 0.0,
+                taxSumm = retElement.select("taxsumm").text().toDoubleOrNull() ?: 0.0,
+                uid = retElement.select("uid").text().toLongOrNull() ?: 0,
+                docPayable = retElement.select("docpayable").text().toLongOrNull() ?: 0,
+                agrmArchive = retElement.select("agrmarchive").text().toLongOrNull() ?: 0,
+                period = retElement.select("period").text(),
+                orderDate = retElement.select("orderdate").text(),
+                creationDate = retElement.select("creationdate").text(),
+                payDate = retElement.select("paydate").text(),
+                filename = retElement.select("filename").text(),
+                docName = retElement.select("docname").text(),
+                docSavePath = retElement.select("docsavepath").text(),
+                docTemplate = retElement.select("doctemplate").text(),
+                docuPloadext = retElement.select("docuploadext").text(),
+                operName = retElement.select("opername").text(),
+                agrmNum = retElement.select("agrmnum").text(),
+                username = retElement.select("username").text(),
+                payReceipt = retElement.select("payreceipt").text(),
+                currSymbol = retElement.select("currsymbol").text(),
+                billDelivery = retElement.select("billdelivery").text().toLongOrNull() ?: 0,
+                billDeliveryName = retElement.select("billdeliveryname").text(),
+                exportState = retElement.select("exportstate").text().toShortOrNull() ?: 0,
+                exportDate = retElement.select("exportdate").text(),
+                organizationId = retElement.select("organizationid").text().toLongOrNull() ?: 0,
+                organizationName = retElement.select("organizationname").text(),
+            )
+        }
+    }
+
 
     fun parseUsboxServiceFull(xmlString: String): List<UsboxServiceFull> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())

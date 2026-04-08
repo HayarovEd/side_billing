@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
@@ -51,6 +52,21 @@ class PaymentController(
         return paymentService.getClientPayments(
             authHeader = authHeader,
             agrmNum = agrmNum,
+            dateTo = dateTo,
+            dateFrom = dateFrom
+        )
+    }
+
+    @GetMapping("/order")
+    fun getClientOrders(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "payed", required = true) payed: Long,
+        @RequestParam(name = "dtto", required = true) dateTo: String,
+        @RequestParam(name = "dtfrom", required = true) dateFrom: String,
+    ): Mono<List<OrderResponse>> {
+        return paymentService.getClientOrders(
+            authHeader = authHeader,
+            payed = payed,
             dateTo = dateTo,
             dateFrom = dateFrom
         )
