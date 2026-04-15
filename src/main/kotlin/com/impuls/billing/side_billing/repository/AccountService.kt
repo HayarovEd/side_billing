@@ -186,6 +186,7 @@ class AccountService(
     fun getClientVgroups(
         authHeader: String,
         agrmid: Long?,
+        vgId: Long?,
     ): Mono<List<ClientVgroupFullResponse>> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
@@ -193,6 +194,7 @@ class AccountService(
                 accountBillingService.getClientVgroups(
                     sessionId = it.sessionId,
                     agrmid = agrmid,
+                    vgId = vgId,
                 )
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)

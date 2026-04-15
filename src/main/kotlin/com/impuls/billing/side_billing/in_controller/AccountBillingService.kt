@@ -186,14 +186,17 @@ class AccountBillingService(
     fun getClientVgroups(
         sessionId: String,
         agrmid: Long?,
+        vgId: Long?,
     ): Mono<List<ClientVgroupFullResponse>> {
         val agrmidStr = agrmid?.toString() ?: ""
+        val vgidStr = vgId?.toString() ?: ""
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
                     "<urn:getClientVgroups>\n" +
                             "         <flt>\n" +
                             "          <agrmid>$agrmidStr</agrmid>\n" +
+                            "          <vgid>$vgidStr</vgid>\n" +
                             "          <nodetails>0</nodetails>\n" +
                             "         </flt>\n" +
                             "      </urn:getClientVgroups>\n"

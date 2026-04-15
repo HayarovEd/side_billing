@@ -112,10 +112,12 @@ class AccountController(
     fun getClientVgroups(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "agrmid", required = false) agrmNum: Long?,
+        @RequestParam(name = "vgid", required = false) vgId: Long?,
     ): Mono<List<ClientVgroupFullResponse>> {
         return accountService.getClientVgroups(
             authHeader = authHeader,
-            agrmid = agrmNum
+            agrmid = agrmNum,
+            vgId = vgId
         )
     }
 
