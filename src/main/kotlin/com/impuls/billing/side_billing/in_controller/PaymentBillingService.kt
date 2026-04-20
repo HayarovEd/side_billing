@@ -79,7 +79,7 @@ class PaymentBillingService(
                 SoapParser.setBaseAppend(
                     "<urn:getClientPayments>\n" +
                             "<flt>\n"+
-                            "<agrmnum>$agrmNum</agrmnum>\n" +
+                            "<agrmid>$agrmNum</agrmid>\n" +
                             "<dtto>$dateTo</dtto>\n" +
                             "<dtfrom>$dateFrom</dtfrom>\n" +
                             "</flt>\n"+
@@ -125,6 +125,33 @@ class PaymentBillingService(
                 response.body?.let { body ->
                     println(body)
                     SoapParser.parseOrderResponse(body)
+                }
+            }
+        )
+    }
+
+    fun getRentAmount(
+        sessionId: String,
+        armgId: Long,
+        tarifId: Long
+    ): Mono<Double> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getRentAmount>\n" +
+                            "         <vgid>$armgId</vgid>\n" +
+                            "         <tarid>$tarifId</tarid>\n" +
+                            "      </urn:getRentAmount>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseToDouble(body)
                 }
             }
         )

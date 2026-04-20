@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
+import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
@@ -69,6 +70,25 @@ class PaymentController(
             payed = payed,
             dateTo = dateTo,
             dateFrom = dateFrom
+        )
+    }
+
+    @GetMapping("/debits")
+    fun getClientDebits(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgid", required = true) vgId: Long,
+        @RequestParam(name = "armgid", required = true) armgId: Long,
+        @RequestParam(name = "tarifid", required = true) tarifId: Long,
+        @RequestParam(name = "dtto", required = true) dateTo: String,
+        @RequestParam(name = "dtfrom", required = true) dateFrom: String,
+    ): Mono<List<DebitDto>> {
+        return paymentService.getClientDebits(
+            authHeader = authHeader,
+            dateTo = dateTo,
+            dateFrom = dateFrom,
+            vgId = vgId,
+            tarifId = tarifId,
+            armgId = armgId
         )
     }
 

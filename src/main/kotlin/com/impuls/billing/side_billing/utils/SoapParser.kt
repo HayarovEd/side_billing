@@ -894,6 +894,12 @@ object SoapParser {
         return retElement?.text()?.toLongOrNull() ?: -1L
     }
 
+    fun parseToDouble(xmlString: String): Double {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()
+        return retElement?.text()?.toDoubleOrNull() ?: 0.0
+    }
+
 
     fun parseLoginResponse(xml: String?): Long? {
         val uidRegex = Regex("<uid>(\\d+)</uid>")
