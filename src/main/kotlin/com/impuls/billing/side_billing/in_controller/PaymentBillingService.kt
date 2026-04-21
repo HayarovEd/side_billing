@@ -133,7 +133,8 @@ class PaymentBillingService(
     fun getRentAmount(
         sessionId: String,
         armgId: Long,
-        tarifId: Long
+        tarifId: Long,
+        monthDate: String,
     ): Mono<Double> {
         val soapRequest = buildString {
             append(
@@ -141,6 +142,7 @@ class PaymentBillingService(
                     "<urn:getRentAmount>\n" +
                             "         <vgid>$armgId</vgid>\n" +
                             "         <tarid>$tarifId</tarid>\n" +
+                            "         <timefrom>$monthDate</timefrom>"+
                             "      </urn:getRentAmount>\n"
                 )
             )

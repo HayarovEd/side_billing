@@ -95,3 +95,32 @@ fun splitByMonths(
 
     return result
 }
+
+fun splitIntervalByMonths(
+    start: LocalDateTime,
+    end: LocalDateTime
+): List<MonthDayCount> {
+    val result = mutableListOf<MonthDayCount>()
+    var current = start.toLocalDate().withDayOfMonth(1)
+    val endDate = end.toLocalDate()
+
+    while (current <= endDate) {
+        val monthStart = maxOf(current, start.toLocalDate())
+        val monthEnd = minOf(current.withDayOfMonth(current.lengthOfMonth()), endDate)
+
+        val days = ChronoUnit.DAYS.between(monthStart, monthEnd) + 1
+
+        if (days > 0) {
+            result.add(
+                MonthDayCount(
+                    yearMonth = YearMonth.from(current),
+                    days = days.toInt()
+                )
+            )
+        }
+
+        current = current.plusMonths(1)
+    }
+
+    return result
+}

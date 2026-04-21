@@ -12,9 +12,11 @@ import com.impuls.billing.side_billing.utils.convertToDate
 import com.impuls.billing.side_billing.utils.monoMapper
 import com.impuls.billing.side_billing.utils.parseFlexibleDate
 import com.impuls.billing.side_billing.utils.splitByMonths
+import com.impuls.billing.side_billing.utils.splitIntervalByMonths
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.format.DateTimeFormatter
 
@@ -118,11 +120,6 @@ class PaymentService(
                     sessionId = it.sessionId,
                     vgId = vgId
                 )
-                val rent = paymentBillingService.getRentAmount(
-                sessionId = it.sessionId,
-                armgId = armgId,
-                tarifId = tarifId
-            )
                 val dateSetTariff = tariffHistory.map { tarifs ->
                     convertToDate(tarifs.first().changed)
                 }
@@ -131,19 +128,57 @@ class PaymentService(
                 }
 
                 val counts = resultStart.map { rs ->
-                    splitByMonths(
-                        startDate = rs,
-                        endDate = end,
+                    splitIntervalByMonths(
+                        start = rs,
+                        end = end,
                     )
                 }
-                counts.zipWith(rent) { cts, rt ->
-                    cts.map { ct ->
-                        DebitDto(
-                            yearMonth = ct.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
-                            amount = ct.days * rt
-                        )
+                /*counts
+                    .flatMapMany { Flux.fromIterable(it).index() }
+                    .flatMap { ctx ->
+                        println("${ctx.t2.yearMonth}")
+                        paymentBillingService.getRentAmount(
+                            sessionId = it.sessionId,
+                            armgId = armgId,
+                            tarifId = tarifId,
+                            monthDate = "${ctx.t2.yearMonth.year}-${ctx.t2.yearMonth.month.ordinal}-01"
+                        ).map { result ->
+                            println("index ${ctx.t1}")
+                            println("result $result")
+                            println("${ctx.t2.days}")
+                            println("multiply ${ctx.t2.days * result}")
+                            ctx.t1 to DebitDto(
+                                yearMonth = ctx.t2.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
+                                amount = ctx.t2.days * result
+                            )
+
+                        }
                     }
-                }
+                    .collectList()
+                    .map { list -> list.sortedBy { it.first }.map { it.second } }*/
+                counts
+                        .flatMapMany { Flux.fromIterable(it).index() }
+                        .concatMap { ct ->
+                            println("date  ${ct.t2.yearMonth.month.value}")
+                            paymentBillingService.getRentAmount(
+                                sessionId = it.sessionId,
+                                armgId = armgId,
+                                tarifId = tarifId,
+                                monthDate = "${ct.t2.yearMonth.year}-${ct.t2.yearMonth.month.value}-01"
+                            ).map { result ->
+                                println("index ${ct.t1}")
+                                println("result $result")
+                                println("${ct.t2.days}")
+                                println("multiply ${ct.t2.days * result}")
+                                ct.t1 to DebitDto(
+                                    yearMonth = ct.t2.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
+                                    amount = ct.t2.days * result
+                                )
+                            }
+                        }
+                        .collectList()
+                        .map { list -> list.sortedBy { it.first }.map { it.second } }
+
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
