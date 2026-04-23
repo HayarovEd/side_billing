@@ -2,6 +2,8 @@ package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.model.out_dto.dto.MonthDayCount
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.reactive.function.client.WebClient
@@ -53,6 +55,60 @@ fun <T : Any> WebClient.handler(
                 Mono.error(ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Billing service error", ex))
             }
         }
+}
+
+suspend fun <T : Any> WebClient.coroutineHandler(
+    soapRequest: String,
+    sessionId: String,
+    bodyFunction: (ResponseEntity<String>) -> T
+): T = coroutineScope {
+
+    val response = try {
+        this@coroutineHandler
+            .post()
+            .bodyValue(soapRequest)
+            .header("Set-Cookie", sessionId)
+            .retrieve()
+            .awaitBillingResponse()
+    } catch (ex: WebClientResponseException) {
+        handleBillingError(ex)
+    }
+
+    println(response)
+    bodyFunction(response)
+}
+
+// Extension для удобной обработки ответа
+private suspend fun WebClient.ResponseSpec.awaitBillingResponse(): ResponseEntity<String> {
+    return try {
+        toEntity(String::class.java).awaitSingle()
+    } catch (ex: WebClientResponseException) {
+        throw ex // Пробрасываем для обработки выше
+    }
+}
+
+// Отдельная функция для обработки ошибок биллинга
+private fun handleBillingError(ex: WebClientResponseException): Nothing {
+    println(ex)
+    val faultString = SoapParser.parseFaultString(ex.responseBodyAsString)
+
+    val exception = when {
+        faultString?.contains("Invalid login", ignoreCase = true) == true -> {
+            BillingException(faultString, HttpStatus.UNAUTHORIZED)
+        }
+        !faultString.isNullOrBlank() -> {
+            BillingException(faultString, HttpStatus.BAD_REQUEST)
+        }
+        else -> {
+            ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Billing service error",
+                ex
+            )
+        }
+    }
+
+    throw exception
 }
 
 fun convertToDate(dateString: String): LocalDateTime {

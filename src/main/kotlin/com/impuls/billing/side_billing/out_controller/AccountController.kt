@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
+import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
@@ -130,6 +131,28 @@ class AccountController(
             authHeader = authHeader,
             oldPassword = body.oldPassword,
             newPassword = body.newPassword,
+        )
+    }
+
+    @GetMapping("/notices")
+    fun getAccountNotices(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "userid", required = true) uid: Long,
+    ): Mono<AccountNoticeResponse> {
+        return accountService.getAccountNotices(
+            authHeader = authHeader,
+            uid = uid
+        )
+    }
+
+    @PostMapping("/notices")
+    fun setAccountNotices(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestBody body: AccountNoticeResponse
+    ): Mono<Long> {
+        return accountService.setAccountNotices(
+            authHeader = authHeader,
+            accountNoticeResponse = body
         )
     }
 

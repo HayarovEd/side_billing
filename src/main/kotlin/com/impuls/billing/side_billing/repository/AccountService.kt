@@ -4,6 +4,7 @@ import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.AccountBillingService
 import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
+import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
@@ -207,7 +208,7 @@ class AccountService(
     ): Mono<ResultSuccessDto> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
-            val result =  monoMapper({
+            val result = monoMapper({
                 accountBillingService.updateClientPassword(
                     sessionId = it.sessionId,
                     oldPassword = oldPassword,
@@ -217,6 +218,38 @@ class AccountService(
             result.map { header ->
                 ResultSuccessDto(header == 1L)
             }
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun getAccountNotices(
+        authHeader: String,
+        uid: Long,
+    ): Mono<AccountNoticeResponse> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            val result = monoMapper({
+                accountBillingService.getAccountNotices(
+                    sessionId = it.sessionId,
+                    uid = uid
+                )
+            })
+            result
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun setAccountNotices(
+        authHeader: String,
+        accountNoticeResponse: AccountNoticeResponse
+    ): Mono<Long> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            val result = monoMapper({
+                accountBillingService.setAccountNotices(
+                    sessionId = it.sessionId,
+                    accountNoticeResponse = accountNoticeResponse
+                )
+            })
+            result
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 

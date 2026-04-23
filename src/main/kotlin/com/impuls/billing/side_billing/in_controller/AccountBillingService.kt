@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.in_controller
 
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
+import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
 import org.springframework.stereotype.Service
@@ -239,4 +240,73 @@ class AccountBillingService(
             }
         )
     }
+
+
+    fun getAccountNotices(
+        sessionId: String,
+        uid: Long,
+    ): Mono<AccountNoticeResponse> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getAccountNotices>\n" +
+                            "         <flt>\n" +
+                            "            <userid>$uid</userid>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getAccountNotices>"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseAccountNotices(body)
+                }
+            }
+        )
+    }
+
+    fun setAccountNotices(
+        sessionId: String,
+        accountNoticeResponse: AccountNoticeResponse
+    ): Mono<Long> {
+        val noticesXml = accountNoticeResponse.notices.joinToString(separator = "\n") { notice ->
+            "            <notices>\n" +
+                    "                <type>${notice.type}</type>\n" +
+                    "               <isemail>${notice.isEmail.toLong()}</isemail>\n" +
+                    "               <issms>${notice.isSms.toLong()}</issms>\n" +
+                    "               <ismessenger>${notice.isMessenger.toLong()}</ismessenger>\n" +
+                    "               <name>${notice.name}</name>\n" +
+                    "               <descr>${notice.descr}</descr>\n" +
+                    "               <value>${notice.value}</value>\n" +
+                    "            </notices>\n"
+        }
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:setAccountNotices>\n" +
+                            "         <an>\n" +
+                            "            <uid>${accountNoticeResponse.uid}</uid>\n" +
+                            noticesXml +
+                            "         </an>\n" +
+                            "      </urn:setAccountNotices>\n"
+                )
+            )
+        }
+
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+    private fun Boolean.toLong(): Long = if (this) 1L else 0L
+
 }

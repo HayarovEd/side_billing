@@ -31,6 +31,8 @@ import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TariffsStaffRe
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TarifsRaspResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.TurboShapeResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.VgroupAddonResponse
+import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
+import com.impuls.billing.side_billing.model.in_dto.notices.NoticeResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TariffsSettingsRentAsServiceResponse
@@ -42,6 +44,29 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseAccountNotices(xmlString: String): AccountNoticeResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        val uid = retElement.select("uid").first()!!.text().toLongOrNull() ?: 0
+        val noticeElements = retElement.select("notices")
+        val notices = noticeElements.map { nt ->
+            NoticeResponse(
+                type = nt.select("type").text().toLongOrNull() ?: 0,
+                isEmail = (nt.select("isemail").text().toLongOrNull() ?: 0) == 1L,
+                isSms = (nt.select("issms").text().toLongOrNull() ?: 0) == 1L,
+                isMessenger = (nt.select("ismessenger").text().toLongOrNull() ?: 0) == 1L,
+                name = nt.select("name").text(),
+                descr = nt.select("descr").text(),
+                value = nt.select("value").text(),
+            )
+        }
+        return AccountNoticeResponse(
+            uid = uid,
+            notices = notices
+        )
+    }
+
 
     fun parseSharedPosts(xmlString: String): List<SharedPostResponse> {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
@@ -116,7 +141,7 @@ object SoapParser {
             println(serviceElement.text())
             val currentModifierElement = retElement.select("currentmodifier").first()!!
             println(currentModifierElement.text())
-         //   val tarifModifierElement = serviceElement.select("modifiers").first()!!
+            //   val tarifModifierElement = serviceElement.select("modifiers").first()!!
             UsboxServiceFull(
                 service = UsboxServiceResponse(
                     notusbox = serviceElement.select("notusbox").text().toLongOrNull() ?: 0,
@@ -130,7 +155,8 @@ object SoapParser {
                     installmentduration = serviceElement.select("installmentduration").text().toLongOrNull() ?: 0,
                     state = serviceElement.select("state").text().toLongOrNull() ?: 0,
                     blocked = serviceElement.select("blocked").text().toLongOrNull() ?: 0,
-                    installmentfirstpayment = serviceElement.select("installmentfirstpayment").text().toDoubleOrNull() ?: 0.0,
+                    installmentfirstpayment = serviceElement.select("installmentfirstpayment").text().toDoubleOrNull()
+                        ?: 0.0,
                     mul = serviceElement.select("mul").text().toDoubleOrNull() ?: 0.0,
                     rate = serviceElement.select("rate").text().toDoubleOrNull() ?: 0.0,
                     discount = serviceElement.select("discount").text().toDoubleOrNull() ?: 0.0,
@@ -144,28 +170,28 @@ object SoapParser {
                     discounttimefrom = serviceElement.select("discounttimefrom").text(),
                     discounttimeto = serviceElement.select("discounttimeto").text(),
                     externaldata = serviceElement.select("externaldata").text(),
-                   /* modifiers = TariffModifierResponse(
-                        recordId = tarifModifierElement.select("recordid").text().toLongOrNull() ?: 0,
-                        tarId = tarifModifierElement.select("tarid").text().toLongOrNull() ?: 0,
-                        servId = tarifModifierElement.select("servid").text().toLongOrNull() ?: 0,
-                        serviceId = tarifModifierElement.select("serviceid").text().toLongOrNull() ?: 0,
-                        vgId = tarifModifierElement.select("vgid").text().toLongOrNull() ?: 0,
-                        keepModifier = tarifModifierElement.select("keepmodifier").text().toLongOrNull() ?: 0,
-                        userPacketId = tarifModifierElement.select("userpacketid").text().toLongOrNull() ?: 0,
-                        actionStaffId = tarifModifierElement.select("actionstaffid").text().toLongOrNull() ?: 0,
-                        tarifsRaspId = tarifModifierElement.select("tarifsraspid").text().toLongOrNull() ?: 0,
-                        blockState = tarifModifierElement.select("blockstate").text().toLongOrNull() ?: 0,
-                        parentRecordId = tarifModifierElement.select("parentrecordid").text().toLongOrNull() ?: 0,
-                        personId = tarifModifierElement.select("personid").text().toLongOrNull() ?: 0,
-                        rent = tarifModifierElement.select("rent").text().toDoubleOrNull() ?: 0.0,
-                        blockRent = tarifModifierElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
-                        rate = tarifModifierElement.select("rate").text().toDoubleOrNull() ?: 0.0,
-                        discount = tarifModifierElement.select("discount").text().toDoubleOrNull() ?: 0.0,
-                        blockDiscount = tarifModifierElement.select("blockdiscount").text().toDoubleOrNull() ?: 0.0,
-                        timeFrom = tarifModifierElement.select("timefrom").text(),
-                        timeTo = tarifModifierElement.select("timeto").text(),
-                        name = tarifModifierElement.select("name").text(),
-                    )*/
+                    /* modifiers = TariffModifierResponse(
+                         recordId = tarifModifierElement.select("recordid").text().toLongOrNull() ?: 0,
+                         tarId = tarifModifierElement.select("tarid").text().toLongOrNull() ?: 0,
+                         servId = tarifModifierElement.select("servid").text().toLongOrNull() ?: 0,
+                         serviceId = tarifModifierElement.select("serviceid").text().toLongOrNull() ?: 0,
+                         vgId = tarifModifierElement.select("vgid").text().toLongOrNull() ?: 0,
+                         keepModifier = tarifModifierElement.select("keepmodifier").text().toLongOrNull() ?: 0,
+                         userPacketId = tarifModifierElement.select("userpacketid").text().toLongOrNull() ?: 0,
+                         actionStaffId = tarifModifierElement.select("actionstaffid").text().toLongOrNull() ?: 0,
+                         tarifsRaspId = tarifModifierElement.select("tarifsraspid").text().toLongOrNull() ?: 0,
+                         blockState = tarifModifierElement.select("blockstate").text().toLongOrNull() ?: 0,
+                         parentRecordId = tarifModifierElement.select("parentrecordid").text().toLongOrNull() ?: 0,
+                         personId = tarifModifierElement.select("personid").text().toLongOrNull() ?: 0,
+                         rent = tarifModifierElement.select("rent").text().toDoubleOrNull() ?: 0.0,
+                         blockRent = tarifModifierElement.select("blockrent").text().toDoubleOrNull() ?: 0.0,
+                         rate = tarifModifierElement.select("rate").text().toDoubleOrNull() ?: 0.0,
+                         discount = tarifModifierElement.select("discount").text().toDoubleOrNull() ?: 0.0,
+                         blockDiscount = tarifModifierElement.select("blockdiscount").text().toDoubleOrNull() ?: 0.0,
+                         timeFrom = tarifModifierElement.select("timefrom").text(),
+                         timeTo = tarifModifierElement.select("timeto").text(),
+                         name = tarifModifierElement.select("name").text(),
+                     )*/
                 ),
                 technicalService = retElement.select("technicalservice").text().toShortOrNull() ?: 0,
                 isAssignedIp = retElement.select("isassignedip").text().toLongOrNull() ?: 0,
