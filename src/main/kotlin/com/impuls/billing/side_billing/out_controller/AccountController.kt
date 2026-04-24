@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.out_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
@@ -131,6 +132,16 @@ class AccountController(
             authHeader = authHeader,
             oldPassword = body.oldPassword,
             newPassword = body.newPassword,
+        )
+    }
+
+
+    @GetMapping("/info")
+    fun getClientInfo(
+        @RequestHeader("Authorization") authHeader: String
+    ): Mono<ClientInfoResponse> {
+        return accountService.getClientInfo(
+            authHeader = authHeader,
         )
     }
 

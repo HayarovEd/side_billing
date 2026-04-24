@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
+import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
@@ -44,6 +45,23 @@ import org.jsoup.parser.Parser
 import org.jsoup.select.Elements
 
 object SoapParser {
+
+    fun parseClientInfo(xmlString: String): ClientInfoResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        return ClientInfoResponse(
+            mobileIsConfirmed = retElement.select("mobileisconfirmed").text().toBoolean(),
+            emailIsConfirmed = retElement.select("emailisconfirmed").text().toBoolean(),
+            offerIsAccepted = retElement.select("offerisaccepted").text().toBoolean(),
+            passIsTemporary = retElement.select("passistemporary").text().toBoolean(),
+            triggerContactDataReminder = retElement.select("triggercontactdatareminder").text().toBoolean(),
+            email = retElement.select("email").text(),
+            password = retElement.select("pass").text(),
+            phone = retElement.select("phone").text(),
+            kontPerson = retElement.select("kontperson").text(),
+            mobile = retElement.select("mobile").text(),
+        )
+    }
 
     fun parseAccountNotices(xmlString: String): AccountNoticeResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())

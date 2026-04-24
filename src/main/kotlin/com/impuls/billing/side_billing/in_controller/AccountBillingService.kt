@@ -1,5 +1,6 @@
 package com.impuls.billing.side_billing.in_controller
 
+import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.utils.SoapParser
@@ -236,6 +237,30 @@ class AccountBillingService(
             bodyFunction = { response ->
                 response.body?.let { body ->
                     SoapParser.parseSetClientInfoResponse(body)
+                }
+            }
+        )
+    }
+
+    fun getClientInfo(
+        sessionId: String
+    ): Mono<ClientInfoResponse> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientInfo>\n" +
+                            "         <flt>\n" +
+                            "         </flt>\n" +
+                            "      </urn:getClientInfo>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseClientInfo(body)
                 }
             }
         )
