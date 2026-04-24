@@ -32,7 +32,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           source: "build/libs/side_billing-0.0.1-SNAPSHOT.jar"
-          target: "/home/side_billing/"
+          target: "/home/bill/side_billing/"
           strip_components: 2
           overwrite: true
 
@@ -44,7 +44,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            cd /home/side_billing
+            cd /home/bill/side_billing
             mv side_billing-0.0.1-SNAPSHOT.jar side_billing.jar
             sudo systemctl restart side_billing
             echo "Deployment completed"
