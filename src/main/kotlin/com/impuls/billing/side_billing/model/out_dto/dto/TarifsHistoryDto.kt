@@ -1,0 +1,25 @@
+package com.impuls.billing.side_billing.model.out_dto.dto
+
+data class TarifsHistoryDto(
+    val tarType: Int,
+    val recordId: Long,
+    val vgId: Long,
+    val agrmId: Long,
+    val uid: Long,
+    val id: Long,
+    val tarIdNew: Long,
+    val tarIdOld: Long,
+    val requestBy: String,
+    val raspTime: String,
+    val changed: String,
+    val vgLogin: String,
+    val agrmNum: String,
+    val code: String,
+    val accName: String,
+    val agentName: String,
+    val tarNewName: String,
+    val tarOldName: String,
+    val mgrName: String,
+    val mgrDescr: String,
+    val currSymbol: String,
+)
