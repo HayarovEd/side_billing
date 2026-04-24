@@ -51,7 +51,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SERVER_PORT }}
           script: |
-            mv /home/side_billing/temp/side_billing-0.0.1-SNAPSHOT.jar /home/side_billing/side_billing.jar
+            mv /home/side_billing/temp/side_billing-0.0.1-SNAPSHOT.jar /home/site/side_billing/side_billing.jar
             rm -rf /home/side_billing/temp
             sudo systemctl restart side_billing
 
