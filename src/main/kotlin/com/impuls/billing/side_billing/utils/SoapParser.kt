@@ -46,6 +46,37 @@ import org.jsoup.select.Elements
 
 object SoapParser {
 
+    fun parseBlockRasp(xmlString: String): List<BlockRaspResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement->
+            BlockRaspResponse(
+                recordId = retElement.select("recordid").text().toLongOrNull()?:0L,
+                vgId = retElement.select("vgid").text().toLongOrNull()?:0L,
+                groupId = retElement.select("groupid").text().toLongOrNull()?:0L,
+                blkReq = retElement.select("blkreq").text().toLongOrNull()?:0L,
+                id = retElement.select("id").text().toLongOrNull()?:0L,
+                isFreewill = retElement.select("isfreewill").text().toLongOrNull()==1L,
+                requestBy = retElement.select("requestby").text().toLongOrNull()?:0L,
+                unBlockedBy = retElement.select("unblockedby").text().toLongOrNull()?:0L,
+                agrmId = retElement.select("agrmid").text().toLongOrNull()?:0L,
+                uid = retElement.select("uid").text().toLongOrNull()?:0L,
+                changeTime = retElement.select("changetime").text(),
+                mgrName = retElement.select("mgrname").text(),
+                mgrDescr = retElement.select("mgrdescr").text(),
+                comment = retElement.select("comment").text(),
+                timeTo = retElement.select("timeto").text(),
+                login = retElement.select("login").text(),
+                unBlockedManagerLogin = retElement.select("unblockedmanagerlogin").text(),
+                unBlockedManagerName = retElement.select("unblockedmanagername").text(),
+                unBlockedManagerDescr = retElement.select("unblockedmanagerdescr").text(),
+                agrmNum = retElement.select("agrmnum").text(),
+                username = retElement.select("username").text()
+            )
+        }
+    }
+
+
     fun parseClientInfo(xmlString: String): ClientInfoResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret")
@@ -440,8 +471,7 @@ object SoapParser {
                         groupId = blockRaspElement.select("groupid").text().toLongOrNull() ?: 0,
                         blkReq = blockRaspElement.select("blkreq").text().toLongOrNull() ?: 0,
                         id = blockRaspElement.select("id").text().toLongOrNull() ?: 0,
-                        isHistory = blockRaspElement.select("ishistory").text().toLongOrNull() ?: 0,
-                        isFreewill = blockRaspElement.select("isfreewill").text().toLongOrNull() ?: 0,
+                        isFreewill = blockRaspElement.select("isfreewill").text().toLongOrNull()==1L,
                         requestBy = blockRaspElement.select("requestby").text().toLongOrNull() ?: 0,
                         unBlockedBy = blockRaspElement.select("unblockedby").text().toLongOrNull() ?: 0,
                         agrmId = blockRaspElement.select("agrmid").text().toLongOrNull() ?: 0,

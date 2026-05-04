@@ -30,14 +30,9 @@ data class BlockRaspResponse(
     val id: Long,
 
     /**
-     * Не используется
-     */
-    val isHistory: Long,
-
-    /**
      * Блокировка относится к добровольной
      */
-    val isFreewill: Long,
+    val isFreewill: Boolean,
 
     /**
      * Идентификатор менеджера, который инициировал переход в эту блокировку.
