@@ -1,6 +1,5 @@
 package com.impuls.billing.side_billing.repository
 
-import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.entity.Token
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
@@ -9,7 +8,6 @@ import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
 import com.impuls.billing.side_billing.security.JwtService
 import com.impuls.billing.side_billing.service.AuthRepository
 import com.impuls.billing.side_billing.utils.monoMapper
-import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -29,22 +27,17 @@ class AuthService(
             password = password
         )
         return result.map { header ->
-            when (header) {
-                null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
-                else -> {
-                    val generatedToken = jwtService.generateAccessToken(header.userId.toString())
-                    val token = authRepository.save(
-                        Token(
-                            token = generatedToken,
-                            sessionId = header.sessionId
-                        )
-                    )
-                    TokenDto(
-                        token = token.token,
-                        id = token.id
-                    )
-                }
-            }
+            val generatedToken = jwtService.generateAccessToken(header.userId.toString())
+            val token = authRepository.save(
+                Token(
+                    token = generatedToken,
+                    sessionId = header.sessionId
+                )
+            )
+            TokenDto(
+                token = token.token,
+                id = token.id
+            )
         }
     }
 
@@ -78,12 +71,7 @@ class AuthService(
                 acceptCode = acceptCode
             )
             result.map { header ->
-                when (header) {
-                    null -> throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
-                    else -> {
-                        ResultSuccessDto(header == 1L)
-                    }
-                }
+                ResultSuccessDto(header == 1L)
             }
         })
     }

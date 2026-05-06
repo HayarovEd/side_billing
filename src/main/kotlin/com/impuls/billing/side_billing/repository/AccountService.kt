@@ -4,6 +4,7 @@ import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.AccountBillingService
 import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
+import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
@@ -201,6 +202,22 @@ class AccountService(
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
+
+    fun getClientVgroupPassword(
+        authHeader: String,
+        vgId: Long,
+    ): Mono<PasswordResponse> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                accountBillingService.getClientVgroupPassword(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
 
     fun updateClientPassword(
         authHeader: String,

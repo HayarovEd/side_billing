@@ -3,6 +3,7 @@ package com.impuls.billing.side_billing.utils
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.SharedPostResponse
@@ -972,6 +973,12 @@ object SoapParser {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret").first()
         return retElement?.text()?.toDoubleOrNull() ?: 0.0
+    }
+
+    fun parseToPasswordResponse(xmlString: String): PasswordResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()
+        return PasswordResponse(retElement?.text()?:"")
     }
 
 

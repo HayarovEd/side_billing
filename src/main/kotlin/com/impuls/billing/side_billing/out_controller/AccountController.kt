@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
+import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
@@ -122,6 +123,18 @@ class AccountController(
             vgId = vgId
         )
     }
+
+    @GetMapping("/vgroupPassword")
+    fun getClientVgroupPassword(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "vgid", required = true) vgId: Long,
+    ): Mono<PasswordResponse> {
+        return accountService.getClientVgroupPassword(
+            authHeader = authHeader,
+            vgId = vgId
+        )
+    }
+
 
     @PostMapping("/password")
     fun updateClientPassword(
