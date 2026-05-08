@@ -1,10 +1,11 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
-import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
+import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
+import com.impuls.billing.side_billing.model.out_dto.dto.RecommendedPaymentDto
 import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.repository.PaymentService
@@ -31,6 +32,19 @@ class PaymentController(
         return paymentService.getPPSettings(
             authHeader = authHeader,
             agrmId = agrmId
+        )
+    }
+
+    @GetMapping("/recommended")
+    fun getRecommendedPayment(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "agrm_id", required = true) agrmId: Long,
+        @RequestParam(name = "mode", required = false) mode: Long?,
+    ): Mono<RecommendedPaymentDto> {
+        return paymentService.getRecommendedPayment(
+            authHeader = authHeader,
+            agrmId = agrmId,
+            mode = mode
         )
     }
 

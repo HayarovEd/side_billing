@@ -10,7 +10,7 @@ import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAcco
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.MacStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
-import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
+import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto

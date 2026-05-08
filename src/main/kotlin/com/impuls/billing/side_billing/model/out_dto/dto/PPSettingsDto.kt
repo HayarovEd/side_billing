@@ -1,4 +1,4 @@
-package com.impuls.billing.side_billing.model.out_dto
+package com.impuls.billing.side_billing.model.out_dto.dto
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import jakarta.validation.constraints.PositiveOrZero

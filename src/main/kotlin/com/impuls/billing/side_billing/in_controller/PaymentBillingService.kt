@@ -1,7 +1,7 @@
 package com.impuls.billing.side_billing.in_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
-import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
+import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.utils.SoapParser
@@ -39,6 +39,33 @@ class PaymentBillingService(
                 response.body?.let { body ->
                     println(body)
                     SoapParser.parseToPPSettings(body).toPPSettings()
+                }
+            }
+        )
+    }
+
+    fun getRecommendedPayment(
+        sessionId: String,
+        agrmId: Long,
+        mode: Long?, //0-3
+    ): Mono<Double> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getRecommendedPayment>\n" +
+                            "         <id>$agrmId</id>\n" +
+                            "         <mode>${mode?:0}</mode>\n" +
+                            "      </urn:getRecommendedPayment>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseToDouble(body)
                 }
             }
         )

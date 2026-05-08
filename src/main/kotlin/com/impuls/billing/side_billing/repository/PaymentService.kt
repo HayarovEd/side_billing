@@ -4,10 +4,11 @@ import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
 import com.impuls.billing.side_billing.in_controller.PaymentBillingService
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
-import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
+import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
+import com.impuls.billing.side_billing.model.out_dto.dto.RecommendedPaymentDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.utils.convertToDate
 import com.impuls.billing.side_billing.utils.monoMapper
@@ -38,6 +39,29 @@ class PaymentService(
                     sessionId = it.sessionId,
                     agrmId = agrmId
                 )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun getRecommendedPayment(
+        authHeader: String,
+        agrmId: Long,
+        mode: Long?,
+    ): Mono<RecommendedPaymentDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                val result = paymentBillingService.getRecommendedPayment(
+                    sessionId = it.sessionId,
+                    agrmId = agrmId,
+                    mode = mode,
+                )
+                result.map { rk->
+                    RecommendedPaymentDto(
+                        amount = rk
+                    )
+                }
+
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
@@ -145,29 +169,6 @@ class PaymentService(
                         end = end,
                     )
                 }
-                /*counts
-                    .flatMapMany { Flux.fromIterable(it).index() }
-                    .flatMap { ctx ->
-                        println("${ctx.t2.yearMonth}")
-                        paymentBillingService.getRentAmount(
-                            sessionId = it.sessionId,
-                            armgId = armgId,
-                            tarifId = tarifId,
-                            monthDate = "${ctx.t2.yearMonth.year}-${ctx.t2.yearMonth.month.ordinal}-01"
-                        ).map { result ->
-                            println("index ${ctx.t1}")
-                            println("result $result")
-                            println("${ctx.t2.days}")
-                            println("multiply ${ctx.t2.days * result}")
-                            ctx.t1 to DebitDto(
-                                yearMonth = ctx.t2.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
-                                amount = ctx.t2.days * result
-                            )
-
-                        }
-                    }
-                    .collectList()
-                    .map { list -> list.sortedBy { it.first }.map { it.second } }*/
                 counts
                         .flatMapMany { Flux.fromIterable(it).index() }
                         .concatMap { ct ->
