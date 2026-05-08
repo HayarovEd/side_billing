@@ -4,6 +4,7 @@ import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
 import com.impuls.billing.side_billing.in_controller.PaymentBillingService
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
@@ -11,7 +12,6 @@ import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.utils.convertToDate
 import com.impuls.billing.side_billing.utils.monoMapper
 import com.impuls.billing.side_billing.utils.parseFlexibleDate
-import com.impuls.billing.side_billing.utils.splitByMonths
 import com.impuls.billing.side_billing.utils.splitIntervalByMonths
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -26,6 +26,22 @@ class PaymentService(
     private val paymentBillingService: PaymentBillingService,
     private val homeInternetBillingService: HomeInternetBillingService
 ) {
+
+    fun getPPSettings(
+        authHeader: String,
+        agrmId: Long
+    ): Mono<PPSettingsDto> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                paymentBillingService.getPPSettings(
+                    sessionId = it.sessionId,
+                    agrmId = agrmId
+                )
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
     @Transactional
     fun addClientPromisePayment(
         authHeader: String,
@@ -41,11 +57,7 @@ class PaymentService(
                     sum = sum,
                 )
                 result.map { header ->
-                    when (header) {
-                        else -> {
-                            ResultSuccessDto(header == 1L)
-                        }
-                    }
+                    ResultSuccessDto(header == 1L)
                 }
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)

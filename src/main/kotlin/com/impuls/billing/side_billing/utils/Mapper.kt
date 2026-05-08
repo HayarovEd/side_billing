@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.utils
 
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
+import com.impuls.billing.side_billing.model.in_dto.PPSettingsResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.TarifsHistoryResponse
@@ -9,6 +10,7 @@ import com.impuls.billing.side_billing.model.in_dto.client_account.GetClientAcco
 import com.impuls.billing.side_billing.model.in_dto.client_payment.ClientPaymentsFullResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.MacStaffResponse
 import com.impuls.billing.side_billing.model.in_dto.tariff.TarifFullResponse
+import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.Account
 import com.impuls.billing.side_billing.model.out_dto.dto.Agreement
 import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
@@ -135,7 +137,7 @@ fun PromisePaymentResponse.toPromisePaymentResponse(): PromisePaymentDto {
 
 
 fun ClientPaymentsFullResponse.toClientPayments(): List<ClientPayment> {
-    return ret.map { rt->
+    return ret.map { rt ->
         ClientPayment(
             pay = Payment(
                 recordId = rt.pay.recordId,
@@ -314,6 +316,20 @@ fun AvailableServiceResponse.toAvailableService(): AvailableServiceDto {
         includeAbove = includeAbove,
         rentPeriod = rentPeriod,
         rentPeriodMonth = rentPeriodMonth
+    )
+}
+
+fun PPSettingsResponse.toPPSettings(): PPSettingsDto {
+    return PPSettingsDto(
+        promiseRent = promiseRent == 1L,
+        promiseTill = promiseTill,
+        promiseMin = promiseMin,
+        promiseMax = promiseMax,
+        promiseLimit = promiseLimit,
+        promiseOnDays = promiseOnDays,
+        promiseBlockDays = promiseBlockDays,
+        promiseAvailable = promiseAvailable == 1L,
+        promiseFee = promiseFee
     )
 }
 

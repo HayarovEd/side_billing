@@ -1,11 +1,13 @@
 package com.impuls.billing.side_billing.in_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
 import com.impuls.billing.side_billing.utils.SoapParser
 import com.impuls.billing.side_billing.utils.handler
 import com.impuls.billing.side_billing.utils.toClientPayments
+import com.impuls.billing.side_billing.utils.toPPSettings
 import com.impuls.billing.side_billing.utils.toPromisePaymentResponse
 import org.springframework.stereotype.Service
 import org.springframework.web.reactive.function.client.WebClient
@@ -15,6 +17,35 @@ import reactor.core.publisher.Mono
 class PaymentBillingService(
     private val webClient: WebClient,
 ) {
+
+
+    fun getPPSettings(
+        sessionId: String,
+        agrmId: Long
+    ): Mono<PPSettingsDto> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientPPSettings>\n" +
+                            "      <agrm>$agrmId</agrm>\n" +
+                            "      </urn:getClientPPSettings>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    println(body)
+                    SoapParser.parseToPPSettings(body).toPPSettings()
+                }
+            }
+        )
+    }
+
+
+
     fun addClientPromisePayment(
         agreementId: Long,
         sum: Double,

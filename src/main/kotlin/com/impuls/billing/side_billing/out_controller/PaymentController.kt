@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.out_dto.PPSettingsDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
 import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
 import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
@@ -21,6 +22,18 @@ import reactor.core.publisher.Mono
 class PaymentController(
     private val paymentService: PaymentService
 ) {
+
+    @GetMapping("/ppSettings")
+    fun getPPSettings(
+        @RequestHeader("Authorization") authHeader: String,
+        @RequestParam(name = "agrm_id", required = true) agrmId: Long,
+    ): Mono<PPSettingsDto> {
+        return paymentService.getPPSettings(
+            authHeader = authHeader,
+            agrmId = agrmId
+        )
+    }
+
 
     @PostMapping("/promisePayment")
     fun addClientPromisePayment(

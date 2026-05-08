@@ -3,6 +3,7 @@ package com.impuls.billing.side_billing.utils
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.in_dto.PPSettingsResponse
 import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
@@ -959,7 +960,23 @@ object SoapParser {
                 fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
             )
         }
+    }
 
+
+    fun parseToPPSettings(xmlString: String): PPSettingsResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        return PPSettingsResponse(
+            promiseRent = retElement.select("promiserent").text().toLongOrNull() ?: 0L,
+            promiseTill = retElement.select("promisetill").text().toLongOrNull() ?: 0L,
+            promiseMin = retElement.select("promisemin").text().toDoubleOrNull() ?: 0.0,
+            promiseMax = retElement.select("promisemax").text().toDoubleOrNull() ?: 0.0,
+            promiseLimit = retElement.select("promiselimit").text().toDoubleOrNull() ?: 0.0,
+            promiseOnDays = retElement.select("promiseondays").text().toLongOrNull() ?: 0L,
+            promiseBlockDays = retElement.select("promiseblockdays").text().toLongOrNull() ?: 0L,
+            promiseAvailable = retElement.select("promiseavailable").text().toLongOrNull() ?: 0L,
+            promiseFee = retElement.select("promisefee").text().toDoubleOrNull() ?: 0.0,
+        )
     }
 
 
