@@ -13,10 +13,14 @@ class WebClientConfig {
     private lateinit var baseUrl: String
 
     @Bean
-    fun webClient(builder: WebClient.Builder): WebClient {
-        return builder
+    fun webClientBuilder(): WebClient.Builder {
+        return WebClient.builder()
             .baseUrl(baseUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, "text/xml; charset=utf-8")
-            .build()
+    }
+
+    @Bean
+    fun webClient(webClientBuilder: WebClient.Builder): WebClient {
+        return webClientBuilder.build()
     }
 }

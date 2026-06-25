@@ -23,36 +23,45 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.postgresql:postgresql")
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-security")
-	implementation("org.springframework.security:spring-security-crypto")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
+	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+
+	// WebClient - ДОБАВЬТЕ ЭТУ СТРОКУ (БЕЗ ИСКЛЮЧЕНИЙ!)
+	implementation("org.springframework.boot:spring-boot-starter-webflux")
+
+	// База данных
+	implementation("org.postgresql:postgresql")
+
+	// Security
+	implementation("org.springframework.security:spring-security-crypto")
+
+	// Kotlin
 	implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
-	compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
+	// JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-impl:0.12.6")
 	runtimeOnly("io.jsonwebtoken:jjwt-jackson:0.12.6")
+	runtimeOnly("io.jsonwebtoken:jjwt-orgjson:0.12.6")
 
-
+	// Другое
 	implementation("org.jsoup:jsoup:1.22.1")
+	compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
 
+	// OpenAPI
+	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+	// Тесты
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("io.projectreactor:reactor-test")
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-
-	implementation("org.springframework.boot:spring-boot-webclient:4.0.5")
-
-
-	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
-	implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
 }
 
 kotlin {
