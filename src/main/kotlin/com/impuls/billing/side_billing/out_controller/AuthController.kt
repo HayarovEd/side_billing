@@ -3,6 +3,7 @@ package com.impuls.billing.side_billing.out_controller
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
+import com.impuls.billing.side_billing.model.out_dto.dto.ValidateToken
 import com.impuls.billing.side_billing.model.out_dto.request.AuthRequest
 import com.impuls.billing.side_billing.model.out_dto.request.PasswordByCodeRequest
 import com.impuls.billing.side_billing.model.out_dto.request.RecoverPasswordRequest
@@ -48,6 +49,15 @@ class AuthController(
             login = body.login,
             password = body.password,
             acceptCode = body.code
+        )
+    }
+
+    @GetMapping("/is_valid")
+    fun validateToken(
+        @RequestParam(name = "token", required = true) token: String,
+    ): ValidateToken {
+        return authService.checkEnableToken(
+            token = token,
         )
     }
 }

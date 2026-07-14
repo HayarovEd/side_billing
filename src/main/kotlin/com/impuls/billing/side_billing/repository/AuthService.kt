@@ -5,6 +5,7 @@ import com.impuls.billing.side_billing.model.entity.Token
 import com.impuls.billing.side_billing.model.out_dto.dto.RecoverPassword
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.TokenDto
+import com.impuls.billing.side_billing.model.out_dto.dto.ValidateToken
 import com.impuls.billing.side_billing.security.JwtService
 import com.impuls.billing.side_billing.service.AuthRepository
 import com.impuls.billing.side_billing.utils.monoMapper
@@ -74,5 +75,21 @@ class AuthService(
                 ResultSuccessDto(header == 1L)
             }
         })
+    }
+
+
+    fun checkEnableToken(
+        token: String,
+    ): ValidateToken {
+        val storedToken = authRepository.findByToken(token)
+        return if (storedToken == null) {
+            ValidateToken(false)
+        } else {
+            if (jwtService.validateAccessToken(storedToken.token)) {
+                ValidateToken(true)
+            } else {
+                ValidateToken(false)
+            }
+        }
     }
 }
