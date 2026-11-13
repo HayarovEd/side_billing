@@ -1,6 +1,6 @@
 package com.impuls.billing.side_billing.config
 
-import com.impuls.billing.side_billing.utils.BASE_INNER_URL
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.HttpHeaders
@@ -9,11 +9,18 @@ import org.springframework.web.reactive.function.client.WebClient
 @Configuration
 class WebClientConfig {
 
+    @Value("\${base.url}")
+    private lateinit var baseUrl: String
+
     @Bean
-    fun webClient(builder: WebClient.Builder): WebClient {
-        return builder
-            .baseUrl(BASE_INNER_URL)
+    fun webClientBuilder(): WebClient.Builder {
+        return WebClient.builder()
+            .baseUrl(baseUrl)
             .defaultHeader(HttpHeaders.CONTENT_TYPE, "text/xml; charset=utf-8")
-            .build()
+    }
+
+    @Bean
+    fun webClient(webClientBuilder: WebClient.Builder): WebClient {
+        return webClientBuilder.build()
     }
 }

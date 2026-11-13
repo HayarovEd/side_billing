@@ -13,11 +13,16 @@ class PostBillingService(
 ) {
     fun getClientSharedPosts(
         sessionId: String,
+        dateFrom: String?,
     ): Mono<List<SharedPostResponse>> {
+        val dateFromString = dateFrom ?: ""
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
                     " <urn:getClientSharedPosts>\n" +
+                            "         <flt>\n" +
+                            "         <dtfrom>$dateFromString</dtfrom>\n" +
+                            "         </flt>\n" +
                             "      </urn:getClientSharedPosts>\n"
                 )
             )

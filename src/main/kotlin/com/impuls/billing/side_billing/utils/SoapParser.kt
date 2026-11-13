@@ -3,6 +3,8 @@ package com.impuls.billing.side_billing.utils
 import com.impuls.billing.side_billing.model.in_dto.AvailableServiceResponse
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
+import com.impuls.billing.side_billing.model.in_dto.PPSettingsResponse
+import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.PromisePaymentResponse
 import com.impuls.billing.side_billing.model.in_dto.RecoverPasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.SharedPostResponse
@@ -46,6 +48,37 @@ import org.jsoup.select.Elements
 
 object SoapParser {
 
+    fun parseBlockRasp(xmlString: String): List<BlockRaspResponse> {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElements = doc.select("ret")
+        return retElements.map { retElement->
+            BlockRaspResponse(
+                recordId = retElement.select("recordid").text().toLongOrNull()?:0L,
+                vgId = retElement.select("vgid").text().toLongOrNull()?:0L,
+                groupId = retElement.select("groupid").text().toLongOrNull()?:0L,
+                blkReq = retElement.select("blkreq").text().toLongOrNull()?:0L,
+                id = retElement.select("id").text().toLongOrNull()?:0L,
+                isFreewill = retElement.select("isfreewill").text().toLongOrNull()==1L,
+                requestBy = retElement.select("requestby").text().toLongOrNull()?:0L,
+                unBlockedBy = retElement.select("unblockedby").text().toLongOrNull()?:0L,
+                agrmId = retElement.select("agrmid").text().toLongOrNull()?:0L,
+                uid = retElement.select("uid").text().toLongOrNull()?:0L,
+                changeTime = retElement.select("changetime").text(),
+                mgrName = retElement.select("mgrname").text(),
+                mgrDescr = retElement.select("mgrdescr").text(),
+                comment = retElement.select("comment").text(),
+                timeTo = retElement.select("timeto").text(),
+                login = retElement.select("login").text(),
+                unBlockedManagerLogin = retElement.select("unblockedmanagerlogin").text(),
+                unBlockedManagerName = retElement.select("unblockedmanagername").text(),
+                unBlockedManagerDescr = retElement.select("unblockedmanagerdescr").text(),
+                agrmNum = retElement.select("agrmnum").text(),
+                username = retElement.select("username").text()
+            )
+        }
+    }
+
+
     fun parseClientInfo(xmlString: String): ClientInfoResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret")
@@ -66,7 +99,7 @@ object SoapParser {
     fun parseAccountNotices(xmlString: String): AccountNoticeResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret")
-        val uid = retElement.select("uid").first()!!.text().toLongOrNull() ?: 0
+        val uid = retElement.select("uid").first()?.text()?.toLongOrNull() ?: 0
         val noticeElements = retElement.select("notices")
         val notices = noticeElements.map { nt ->
             NoticeResponse(
@@ -440,8 +473,7 @@ object SoapParser {
                         groupId = blockRaspElement.select("groupid").text().toLongOrNull() ?: 0,
                         blkReq = blockRaspElement.select("blkreq").text().toLongOrNull() ?: 0,
                         id = blockRaspElement.select("id").text().toLongOrNull() ?: 0,
-                        isHistory = blockRaspElement.select("ishistory").text().toLongOrNull() ?: 0,
-                        isFreewill = blockRaspElement.select("isfreewill").text().toLongOrNull() ?: 0,
+                        isFreewill = blockRaspElement.select("isfreewill").text().toLongOrNull()==1L,
                         requestBy = blockRaspElement.select("requestby").text().toLongOrNull() ?: 0,
                         unBlockedBy = blockRaspElement.select("unblockedby").text().toLongOrNull() ?: 0,
                         agrmId = blockRaspElement.select("agrmid").text().toLongOrNull() ?: 0,
@@ -694,93 +726,93 @@ object SoapParser {
 
     fun parseFullSoapResponse(xmlString: String): GetClientAccountResponse {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
-        val retElement = doc.select("ret").first()!!
+        val retElement = doc.select("ret").firstOrNull()
         return GetClientAccountResponse(parseRet(retElement))
     }
 
 
-    private fun parseRet(retElement: Element): ClientAccountDataDto {
+    private fun parseRet(retElement: Element?): ClientAccountDataDto {
         return ClientAccountDataDto(
-            application = retElement.select("application").text().toIntOrNull() ?: 0,
-            billdeliveryname = retElement.select("billdeliveryname").text(),
-            account = parseAccount(retElement.select("account").first()!!),
-            usergroups = parseUserGroups(retElement.select("usergroups").first()!!),
-            agreements = parseAgreements(retElement.select("agreements"))
+            application = retElement?.select("application")?.text()?.toIntOrNull() ?: 0,
+            billdeliveryname = retElement?.select("billdeliveryname")?.text()?:"",
+            account = parseAccount(retElement?.select("account")?.firstOrNull()),
+            usergroups = parseUserGroups(retElement?.select("usergroups")?.first()!!),
+            agreements = parseAgreements(retElement.select("agreements")!!)
         )
     }
 
-    private fun parseAccount(accountElement: Element): AccountDto {
+    private fun parseAccount(accountElement: Element?): AccountDto {
         return AccountDto(
-            uid = accountElement.select("uid").text().toIntOrNull() ?: 0,
-            doctype = accountElement.select("doctype").text().toIntOrNull() ?: 0,
-            ipaccess = accountElement.select("ipaccess").text().toIntOrNull() ?: 0,
-            billdelivery = accountElement.select("billdelivery").text().toIntOrNull() ?: 0,
-            category = accountElement.select("category").text().toIntOrNull() ?: 0,
-            type = accountElement.select("type").text().toIntOrNull() ?: 0,
-            oksm = accountElement.select("oksm").text().toIntOrNull() ?: 0,
-            templ = accountElement.select("templ").text().toIntOrNull() ?: 0,
-            wrongactive = accountElement.select("wrongactive").text().toIntOrNull() ?: 0,
-            archive = accountElement.select("archive").text().toIntOrNull() ?: 0,
-            ownership = accountElement.select("ownership").text().toIntOrNull() ?: 0,
-            mobileisconfirmed = accountElement.select("mobileisconfirmed").text()
-                .toBooleanStrictOrNull() ?: false,
-            emailisconfirmed = accountElement.select("emailisconfirmed").text()
-                .toBooleanStrictOrNull() ?: false,
-            offerisaccepted = accountElement.select("offerisaccepted").text()
-                .toBooleanStrictOrNull() ?: false,
-            soleproprietor = accountElement.select("soleproprietor").text().toBooleanStrictOrNull()
+            uid = accountElement?.select("uid")?.text()?.toIntOrNull() ?: 0,
+            doctype = accountElement?.select("doctype")?.text()?.toIntOrNull() ?: 0,
+            ipaccess = accountElement?.select("ipaccess")?.text()?.toIntOrNull() ?: 0,
+            billdelivery = accountElement?.select("billdelivery")?.text()?.toIntOrNull() ?: 0,
+            category = accountElement?.select("category")?.text()?.toIntOrNull() ?: 0,
+            type = accountElement?.select("type")?.text()?.toIntOrNull() ?: 0,
+            oksm = accountElement?.select("oksm")?.text()?.toIntOrNull() ?: 0,
+            templ = accountElement?.select("templ")?.text()?.toIntOrNull() ?: 0,
+            wrongactive = accountElement?.select("wrongactive")?.text()?.toIntOrNull() ?: 0,
+            archive = accountElement?.select("archive")?.text()?.toIntOrNull() ?: 0,
+            ownership = accountElement?.select("ownership")?.text()?.toIntOrNull() ?: 0,
+            mobileisconfirmed = accountElement?.select("mobileisconfirmed")?.text()
+                ?.toBooleanStrictOrNull() ?: false,
+            emailisconfirmed = accountElement?.select("emailisconfirmed")?.text()
+                ?.toBooleanStrictOrNull() ?: false,
+            offerisaccepted = accountElement?.select("offerisaccepted")?.text()
+                ?.toBooleanStrictOrNull() ?: false,
+            soleproprietor = accountElement?.select("soleproprietor")?.text()?.toBooleanStrictOrNull()
                 ?: false,
-            login = accountElement.select("login").text(),
-            pass = accountElement.select("pass").text(),
-            descr = accountElement.select("descr").text(),
-            name = accountElement.select("name").text(),
-            phone = accountElement.select("phone").text(),
-            fax = accountElement.select("fax").text(),
-            email = accountElement.select("email").text(),
-            mobile = accountElement.select("mobile").text(),
-            bankname = accountElement.select("bankname").text(),
-            branchbankname = accountElement.select("branchbankname").text(),
-            treasuryname = accountElement.select("treasuryname").text(),
-            treasuryaccount = accountElement.select("treasuryaccount").text(),
-            bik = accountElement.select("bik").text(),
-            settl = accountElement.select("settl").text(),
-            corr = accountElement.select("corr").text(),
-            kpp = accountElement.select("kpp").text(),
-            inn = accountElement.select("inn").text(),
-            ogrn = accountElement.select("ogrn").text(),
-            okpo = accountElement.select("okpo").text(),
-            okved = accountElement.select("okved").text(),
-            gendiru = accountElement.select("gendiru").text(),
-            glbuhgu = accountElement.select("glbuhgu").text(),
-            kontperson = accountElement.select("kontperson").text(),
-            actonwhat = accountElement.select("actonwhat").text(),
-            passsernum = accountElement.select("passsernum").text(),
-            passno = accountElement.select("passno").text(),
-            passissuedate = accountElement.select("passissuedate").text(),
-            passissuedep = accountElement.select("passissuedep").text(),
-            passissueplace = accountElement.select("passissueplace").text(),
-            birthdate = accountElement.select("birthdate").text(),
-            birthplace = accountElement.select("birthplace").text(),
-            lastmoddate = accountElement.select("lastmoddate").text(),
-            wrongdate = accountElement.select("wrongdate").text(),
-            okato = accountElement.select("okato").text(),
-            uuid = accountElement.select("uuid").text(),
-            abonentname = accountElement.select("abonentname").text(),
-            abonentsurname = accountElement.select("abonentsurname").text(),
-            abonentpatronymic = accountElement.select("abonentpatronymic").text(),
-            managerid = accountElement.select("managerid").text().toIntOrNull() ?: -1,
-            managername = accountElement.select("managername").text(),
-            managerlogin = accountElement.select("managerlogin").text(),
-            swift = accountElement.select("swift").text(),
-            kio = accountElement.select("kio").text(),
-            bicbei = accountElement.select("bicbei").text(),
-            iban = accountElement.select("iban").text(),
-            bankcorr = accountElement.select("bankcorr").text(),
-            bankcorrcode = accountElement.select("bankcorrcode").text(),
-            bankcorraccount = accountElement.select("bankcorraccount").text(),
-            currency = accountElement.select("currency").text(),
-            resident = accountElement.select("resident").text().toIntOrNull() ?: 0,
-            vatonfiscalization = accountElement.select("vatonfiscalization").text().toIntOrNull()
+            login = accountElement?.select("login")?.text()?:"",
+            pass = accountElement?.select("pass")?.text()?:"",
+            descr = accountElement?.select("descr")?.text()?:"",
+            name = accountElement?.select("name")?.text()?:"",
+            phone = accountElement?.select("phone")?.text()?:"",
+            fax = accountElement?.select("fax")?.text()?:"",
+            email = accountElement?.select("email")?.text()?:"",
+            mobile = accountElement?.select("mobile")?.text()?:"",
+            bankname = accountElement?.select("bankname")?.text()?:"",
+            branchbankname = accountElement?.select("branchbankname")?.text()?:"",
+            treasuryname = accountElement?.select("treasuryname")?.text()?:"",
+            treasuryaccount = accountElement?.select("treasuryaccount")?.text()?:"",
+            bik = accountElement?.select("bik")?.text()?:"",
+            settl = accountElement?.select("settl")?.text()?:"",
+            corr = accountElement?.select("corr")?.text()?:"",
+            kpp = accountElement?.select("kpp")?.text()?:"",
+            inn = accountElement?.select("inn")?.text()?:"",
+            ogrn = accountElement?.select("ogrn")?.text()?:"",
+            okpo = accountElement?.select("okpo")?.text()?:"",
+            okved = accountElement?.select("okved")?.text()?:"",
+            gendiru = accountElement?.select("gendiru")?.text()?:"",
+            glbuhgu = accountElement?.select("glbuhgu")?.text()?:"",
+            kontperson = accountElement?.select("kontperson")?.text()?:"",
+            actonwhat = accountElement?.select("actonwhat")?.text()?:"",
+            passsernum = accountElement?.select("passsernum")?.text()?:"",
+            passno = accountElement?.select("passno")?.text()?:"",
+            passissuedate = accountElement?.select("passissuedate")?.text()?:"",
+            passissuedep = accountElement?.select("passissuedep")?.text()?:"",
+            passissueplace = accountElement?.select("passissueplace")?.text()?:"",
+            birthdate = accountElement?.select("birthdate")?.text()?:"",
+            birthplace = accountElement?.select("birthplace")?.text()?:"",
+            lastmoddate = accountElement?.select("lastmoddate")?.text()?:"",
+            wrongdate = accountElement?.select("wrongdate")?.text()?:"",
+            okato = accountElement?.select("okato")?.text()?:"",
+            uuid = accountElement?.select("uuid")?.text()?:"",
+            abonentname = accountElement?.select("abonentname")?.text()?:"",
+            abonentsurname = accountElement?.select("abonentsurname")?.text()?:"",
+            abonentpatronymic = accountElement?.select("abonentpatronymic")?.text()?:"",
+            managerid = accountElement?.select("managerid")?.text()?.toIntOrNull() ?: -1,
+            managername = accountElement?.select("managername")?.text()?:"",
+            managerlogin = accountElement?.select("managerlogin")?.text()?:"",
+            swift = accountElement?.select("swift")?.text()?:"",
+            kio = accountElement?.select("kio")?.text()?:"",
+            bicbei = accountElement?.select("bicbei")?.text()?:"",
+            iban = accountElement?.select("iban")?.text()?:"",
+            bankcorr = accountElement?.select("bankcorr")?.text()?:"",
+            bankcorrcode = accountElement?.select("bankcorrcode")?.text()?:"",
+            bankcorraccount = accountElement?.select("bankcorraccount")?.text()?:"",
+            currency = accountElement?.select("currency")?.text()?:"",
+            resident = accountElement?.select("resident")?.text()?.toIntOrNull() ?: 0,
+            vatonfiscalization = accountElement?.select("vatonfiscalization")?.text()?.toIntOrNull()
                 ?: 0,
         )
     }
@@ -928,7 +960,23 @@ object SoapParser {
                 fee = retElement.select("fee").text().toDoubleOrNull() ?: 0.0,
             )
         }
+    }
 
+
+    fun parseToPPSettings(xmlString: String): PPSettingsResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret")
+        return PPSettingsResponse(
+            promiseRent = retElement.select("promiserent").text().toLongOrNull() ?: 0L,
+            promiseTill = retElement.select("promisetill").text().toLongOrNull() ?: 0L,
+            promiseMin = retElement.select("promisemin").text().toDoubleOrNull() ?: 0.0,
+            promiseMax = retElement.select("promisemax").text().toDoubleOrNull() ?: 0.0,
+            promiseLimit = retElement.select("promiselimit").text().toDoubleOrNull() ?: 0.0,
+            promiseOnDays = retElement.select("promiseondays").text().toLongOrNull() ?: 0L,
+            promiseBlockDays = retElement.select("promiseblockdays").text().toLongOrNull() ?: 0L,
+            promiseAvailable = retElement.select("promiseavailable").text().toLongOrNull() ?: 0L,
+            promiseFee = retElement.select("promisefee").text().toDoubleOrNull() ?: 0.0,
+        )
     }
 
 
@@ -942,6 +990,12 @@ object SoapParser {
         val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
         val retElement = doc.select("ret").first()
         return retElement?.text()?.toDoubleOrNull() ?: 0.0
+    }
+
+    fun parseToPasswordResponse(xmlString: String): PasswordResponse {
+        val doc = Jsoup.parse(xmlString, "", Parser.xmlParser())
+        val retElement = doc.select("ret").first()
+        return PasswordResponse(retElement?.text()?:"")
     }
 
 

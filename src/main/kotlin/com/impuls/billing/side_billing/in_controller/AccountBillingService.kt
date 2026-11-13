@@ -1,6 +1,7 @@
 package com.impuls.billing.side_billing.in_controller
 
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
+import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
 import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeResponse
 import com.impuls.billing.side_billing.utils.SoapParser
@@ -120,10 +121,10 @@ class AccountBillingService(
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
-                    " <urn:confirmValidateClientMobileNumber>\n" +
-                            "         <id>$id/id>\n" +
+                    "<urn:confirmValidateClientMobileNumber>\n" +
+                            "         <id>$id</id>\n" +
                             "         <code>$code</code>\n" +
-                            "      </urn:confirmValidateClientMobileNumber>\n"
+                            "      </urn:confirmValidateClientMobileNumber>"
                 )
             )
         }
@@ -146,10 +147,10 @@ class AccountBillingService(
         val soapRequest = buildString {
             append(
                 SoapParser.setBaseAppend(
-                    " <urn:confirmValidateClientEmail>\n" +
-                            "         <id>$id/id>\n" +
+                    "<urn:confirmValidateClientEmail>\n" +
+                            "         <id>$id</id>\n" +
                             "         <code>$code</code>\n" +
-                            "      </urn:confirmValidateClientEmail>\n"
+                            "      </urn:confirmValidateClientEmail>"
                 )
             )
         }
@@ -211,6 +212,31 @@ class AccountBillingService(
             bodyFunction = { response ->
                 response.body?.let { body ->
                     SoapParser.parseFullSoapClientVgroupFullResponse(body)
+                }
+            }
+        )
+    }
+
+
+    fun getClientVgroupPassword(
+        sessionId: String,
+        vgId: Long,
+    ): Mono<PasswordResponse> {
+        val soapRequest = buildString {
+            append(
+                SoapParser.setBaseAppend(
+                    "<urn:getClientVgroupPassword>\n" +
+                            "         <vgid>$vgId</vgid>\n" +
+                            "      </urn:getClientVgroupPassword>\n"
+                )
+            )
+        }
+        return webClient.handler(
+            soapRequest = soapRequest,
+            sessionId = sessionId,
+            bodyFunction = { response ->
+                response.body?.let { body ->
+                    SoapParser.parseToPasswordResponse(body)
                 }
             }
         )

@@ -14,13 +14,15 @@ class PostService(
     private val tokenService: TokenService,
 ) {
     fun getClientSharedPosts(
-        authHeader: String
+        authHeader: String,
+        dateFrom: String?,
     ): Mono<List<SharedPostResponse>> {
         val session = tokenService.getSession(authHeader)
         return session?.let {
             monoMapper({
                 postBillingService.getClientSharedPosts(
                     sessionId = it.sessionId,
+                    dateFrom = dateFrom,
                 )
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)

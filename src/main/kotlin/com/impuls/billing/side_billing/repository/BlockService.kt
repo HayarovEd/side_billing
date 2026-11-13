@@ -2,6 +2,7 @@ package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
 import com.impuls.billing.side_billing.in_controller.BlockBillingService
+import com.impuls.billing.side_billing.model.in_dto.client_vgroup.BlockRaspResponse
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessLongDto
 import com.impuls.billing.side_billing.utils.monoMapper
 import org.springframework.http.HttpStatus
@@ -33,6 +34,25 @@ class BlockService(
                 result.map { header ->
                     ResultSuccessLongDto(header)
                 }
+            })
+        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    }
+
+    fun getBlkRasp(
+        authHeader: String,
+        vgId: Long,
+        dateFrom: String?,
+        dateTo: String?,
+    ): Mono<List<BlockRaspResponse>> {
+        val session = tokenService.getSession(authHeader)
+        return session?.let {
+            monoMapper({
+                blockBillingService.getBlkRasp(
+                    sessionId = it.sessionId,
+                    vgId = vgId,
+                    dateFrom = dateFrom,
+                    dateTo = dateTo,
+                )
             })
         } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
