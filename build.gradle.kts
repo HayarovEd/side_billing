@@ -41,9 +41,11 @@ dependencies {
 	// Security
 	implementation("org.springframework.security:spring-security-crypto")
 
-	// Kotlin
+	// Kotlin & Coroutines
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
+	implementation("io.projectreactor:reactor-core")
 
 	// JWT
 	implementation("io.jsonwebtoken:jjwt-api:0.12.6")
