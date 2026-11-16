@@ -9,6 +9,5 @@ class SideBillingApplicationTests {
     @Test
     fun contextLoads() {
     }
-
 }
 

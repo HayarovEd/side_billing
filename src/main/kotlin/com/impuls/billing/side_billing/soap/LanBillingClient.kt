@@ -32,27 +32,10 @@ class LanBillingClient(
 
         try {
             port.block()
-        } catch (e: SOAPFaultException) {
-            val faultString = e.fault?.faultString ?: e.message ?: "SOAP Error"
-            log.error("SOAP fault: {}", faultString)
-            if (faultString.contains("Invalid login", ignoreCase = true) ||
-                faultString.contains("Session", ignoreCase = true) ||
-                faultString.contains("User not found", ignoreCase = true)
-            ) {
-                throw BillingException(faultString, HttpStatus.UNAUTHORIZED)
-            }
-            throw BillingException(faultString, HttpStatus.BAD_REQUEST)
         } catch (e: BillingException) {
             throw e
-        } catch (e: Exception) {
-            log.error("Billing communication error", e)
-            val msg = e.message ?: "Billing communication error"
-            val status = if (msg.contains("timed out", ignoreCase = true) || msg.contains("Timeout", ignoreCase = true)) {
-                HttpStatus.GATEWAY_TIMEOUT
-            } else {
-                HttpStatus.BAD_GATEWAY
-            }
-            throw BillingException(msg, status)
+        } catch (e: Throwable) {
+            handleError(e)
         }
     }
 
@@ -64,27 +47,19 @@ class LanBillingClient(
         val result: List<SoapClientLogin>
         try {
             result = port.clientLogin(null, username, pass, null)
-        } catch (e: SOAPFaultException) {
-            val msg = e.fault?.faultString ?: e.message ?: "Invalid login or password"
-            log.warn("SOAP fault during login for user {}: {}", username, msg)
-            throw BillingException(msg, HttpStatus.UNAUTHORIZED)
         } catch (e: BillingException) {
             throw e
-        } catch (e: Exception) {
-            log.error("Error communicating with billing during login for user {}: {}", username, e.message, e)
-            val msg = e.message ?: "Billing communication error"
-            val status = if (msg.contains("timed out", ignoreCase = true) || msg.contains("Timeout", ignoreCase = true)) {
-                HttpStatus.GATEWAY_TIMEOUT
-            } else {
-                HttpStatus.BAD_GATEWAY
-            }
-            throw BillingException(msg, status)
+        } catch (e: Throwable) {
+            handleError(e, username)
         }
 
         val uid = result.firstOrNull()?.uid
             ?: throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
 
-        val respHeaders = bp.responseContext[MessageContext.HTTP_RESPONSE_HEADERS] as? Map<*, *>
+        val respHeaders = (bp.responseContext[MessageContext.HTTP_RESPONSE_HEADERS]
+            ?: try { org.apache.cxf.frontend.ClientProxy.getClient(port).responseContext[MessageContext.HTTP_RESPONSE_HEADERS] } catch (_: Exception) { null }
+        ) as? Map<*, *>
+
         val rawCookie = respHeaders?.entries
             ?.firstOrNull { it.key.toString().equals("Set-Cookie", ignoreCase = true) }
             ?.value
@@ -96,5 +71,48 @@ class LanBillingClient(
         } ?: throw BillingException("Session cookie not returned by billing", HttpStatus.UNAUTHORIZED)
 
         Pair(uid, sessionId)
+    }
+
+    private fun handleError(e: Throwable, username: String? = null): Nothing {
+        var faultString: String? = null
+        var cur: Throwable? = e
+        while (cur != null) {
+            if (cur is SOAPFaultException) {
+                faultString = cur.fault?.faultString ?: cur.message
+                break
+            }
+            if (cur is org.apache.cxf.binding.soap.SoapFault) {
+                faultString = cur.reason ?: cur.message
+                break
+            }
+            val msg = cur.message
+            if (msg != null && (msg.contains("Invalid login", ignoreCase = true) ||
+                                msg.contains("User not found", ignoreCase = true) ||
+                                msg.contains("SoapFault", ignoreCase = true))) {
+                faultString = msg.substringAfter("SoapFault:").trim()
+                break
+            }
+            cur = cur.cause
+        }
+
+        if (faultString != null) {
+            log.warn("SOAP fault for user '{}': {}", username ?: "unknown", faultString)
+            if (faultString.contains("Invalid login", ignoreCase = true) ||
+                faultString.contains("Session", ignoreCase = true) ||
+                faultString.contains("User not found", ignoreCase = true)
+            ) {
+                throw BillingException("Invalid login or password", HttpStatus.UNAUTHORIZED)
+            }
+            throw BillingException(faultString, HttpStatus.BAD_REQUEST)
+        }
+
+        val msg = e.message ?: "Billing communication error"
+        val status = if (msg.contains("timed out", ignoreCase = true) || msg.contains("Timeout", ignoreCase = true)) {
+            HttpStatus.GATEWAY_TIMEOUT
+        } else {
+            HttpStatus.BAD_GATEWAY
+        }
+        log.error("Billing error (status: {}): {}", status, msg, e)
+        throw BillingException(msg, status)
     }
 }
