@@ -1,3 +1,15 @@
+buildscript {
+	repositories {
+		gradlePluginPortal()
+		mavenCentral()
+	}
+	dependencies {
+		classpath("io.mateo:cxf-codegen-gradle:2.4.0")
+	}
+}
+
+import io.mateo.cxf.codegen.wsdl2java.Wsdl2Java
+
 plugins {
 	kotlin("jvm") version "2.2.21"
 	kotlin("plugin.spring") version "2.2.21"
@@ -57,7 +69,9 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-val lanbillingWsdl2Java = tasks.register<io.mateo.cxf.codegen.wsdl2java.Wsdl2Java>("lanbillingWsdl2Java") {
+val generatedSourcesDir = file("build/lanbillingWsdl2Java-wsdl2java-generated-sources")
+
+val lanbillingWsdl2Java = tasks.register<Wsdl2Java>("lanbillingWsdl2Java") {
 	toolOptions {
 		wsdl.set(file("docs/wsdl.xml").absolutePath)
 		packageNames.set(listOf("com.impuls.billing.soap.generated"))
@@ -70,6 +84,7 @@ sourceSets {
 	main {
 		java {
 			srcDir(lanbillingWsdl2Java)
+			srcDir(generatedSourcesDir)
 		}
 	}
 }
@@ -94,6 +109,7 @@ tasks.test {
 
 idea {
 	module {
-		generatedSourceDirs.add(file("build/lanbillingWsdl2Java-wsdl2java-generated-sources"))
+		sourceDirs.add(generatedSourcesDir)
+		generatedSourceDirs.add(generatedSourcesDir)
 	}
 }
