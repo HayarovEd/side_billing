@@ -1,0 +1,120 @@
+================================================================================
+          ОТЧЕТ О ПРОДЕЛАННОЙ РАБОТЕ ПО ПРОЕКТУ SIDE_BILLING
+                         Дата: 16 ноября 2026 г.
+                         Ветка: refactor_plan_b
+================================================================================
+
+1. ЦЕЛЬ И ЗАДАЧИ ЭТАПА
+--------------------------------------------------------------------------------
+Цель: Полная модернизация сервиса Side Billing по архитектурному плану «План Б»:
+1. Отказ от ручной сборки XML-строк и парсинга через регулярные выражения/Jsoup в пользу
+   строго типизированного JAX-WS клиента на базе Apache CXF из WSDL схемы LanBilling 2.0.
+2. Полная ликвидация реляционной базы данных (PostgreSQL) и переход на 100% Stateless
+   архитектуру с хранением идентификатора SOAP-сессии в JWT-токене.
+3. Миграция с реактивного WebFlux (Mono/Flux) на идиоматичные Kotlin Coroutines.
+4. Устранение проблем со стабильностью запуска, компиляцией в IntelliJ IDEA,
+   сетевой маршрутизацией через VPN и обработкой ошибок авторизации.
+5. Создание исчерпывающей документации по REST API и конфигурации окружений.
+
+
+2. КЛЮЧЕВЫЕ ДОСТИЖЕНИЯ И ТЕХНИЧЕСКИЕ РЕШЕНИЯ
+--------------------------------------------------------------------------------
+
+2.1. Автогенерация типизированного SOAP JAX-WS клиента (Apache CXF)
+- Внедрен Gradle-плагин 'io.mateo.cxf-codegen:2.4.0'.
+- Настроена кодогенерация из WSDL схемы 'docs/wsdl.xml'.
+- Сгенерировано 1 963 Java-класса (интерфейс Api3PortType и все DTO запросов/ответов).
+- Сконфигурирован HTTPConduit с таймаутами (подключение: 10 сек, чтение: 30 сек)
+  и отключением chunking для совместимости с gSOAP демоном LanBilling.
+- В 'build.gradle.kts' директория сгенерированного кода связана с 'sourceSets.main.java'
+  и 'idea.module.generatedSourceDirs'.
+
+2.2. Ликвидация PostgreSQL и переход на 100% Stateless архитектуру
+- Полностью удалены зависимости: 'org.postgresql:postgresql', 'spring-boot-starter-data-jpa',
+  'liquibase-core'.
+- Удалены сущности JPA (Token.kt), репозитории и миграции базы данных.
+- Токен авторизации переведен на чистый Stateless JWT:
+  * При логине клиент получает идентификатор сессии биллинга (Set-Cookie / sessnum).
+  * SessionId шифруется и подписывается в claim 'sid' JWT-токена.
+  * При последующих защищенных запросах шлюз извлекает 'sid' из JWT и передает его
+    в биллинг в заголовках Cookie и Set-Cookie без единого обращения к БД.
+
+2.3. Миграция на Kotlin Coroutines
+- Удалены 'spring-boot-starter-webflux', 'io.projectreactor.kotlin', 'jsoup'.
+- Все 6 контроллеров и сервисы переписаны на 'suspend fun' и 'withContext(Dispatchers.IO)'.
+- Удален каталог 'in_controller', а также старые ручные парсеры 'SoapParser.kt' и 'StatParser.kt'.
+- Переписан 'Mapper.kt' для безопасного маппинга типизированных SOAP DTO.
+- Для корректной интеграции Spring MVC с 'suspend fun' подключены 'kotlinx-coroutines-reactor'
+  и 'reactor-core' (устранена ошибка NoClassDefFoundError: org/reactivestreams/Publisher).
+
+2.4. Решение проблем запуска и интеграции в IntelliJ IDEA
+- В 'SideBillingApplication.kt' добавлен '@JvmStatic fun main' внутри companion object,
+  что позволило IDEA корректно запускать как класс SideBillingApplication, так и SideBillingApplicationKt.
+- В 'build.gradle.kts' добавлен блок 'buildscript { classpath(...) }' и явный импорт 'Wsdl2Java',
+  что устранило ложное подсвечивание синтаксиса красным цветом в редакторе IDEA.
+- В конфигурации '.idea/gradle.xml' JVM обновлена до версии 21.
+
+2.5. Сетевая диагностика, маршрутизация и устранение таймаутов
+- Проблема: При авторизации возникал таймаут 30 секунд (HttpTimeoutException: request timed out)
+  при обращении к http://10.222.220.3:34012.
+- Причина: При включенном VPN TUN-адаптер ('happ-default-tun') перехватывал маршрут по умолчанию
+  0.0.0.0/0 с метрикой 0, отправляя трафик к внутреннему IP 10.222.220.3 в зарубежный туннель.
+- Решение: Добавлен статический маршрут в локальную сеть через шлюз физической сетевой карты:
+  'route -p add 10.222.220.0 mask 255.255.255.0 10.222.222.1'.
+  Время отклика демона биллинга сократилось до 27 миллисекунд.
+
+2.6. Корректная обработка SOAP-ошибок и исключений авторизации
+- Выявлено: При передаче неверных учетных данных LanBilling возвращает HTTP 500 с gSOAP Fault
+  '<faultstring>Invalid login/pass. Client login: $1</faultstring>'.
+  Apache CXF оборачивает его в 'jakarta.xml.ws.WebServiceException' с 'SoapFault'.
+- В 'LanBillingClient.kt' реализована функция 'handleError', рекурсивно разворачивающая
+  цепочку исключений:
+  * Ошибки неверного логина/пароля или истекшей сессии возвращают HTTP 401 Unauthorized
+    с телом {"message": "Invalid login or password"}.
+  * Сетевые таймауты возвращают HTTP 504 Gateway Timeout.
+  * Ошибки недоступности сервера возвращают HTTP 502 Bad Gateway.
+- В 'GlobalExceptionHandler.kt' добавлено полное логирование стека (log.error) и возврат
+  реального текста ошибки вместо скрывающего заглушки.
+- В 'AuthRequest.kt' добавлены алиасы '@JsonAlias("login", "username")'.
+
+2.7. Гибкая конфигурация окружений (.env и application.properties)
+- 'application.properties' переведен на безопасный шаблон '${ПЕРЕМЕННАЯ:значение_по_умолчанию}'.
+- Устранен конфликт со стандартной переменной Windows '%USERNAME%' путем переименования
+  в 'SECURITY_USER_NAME'.
+- В 'application-prod.properties' настроены параметры продакшн-сервера (с безопасным дефолтом 0.0.0.0).
+- Создан шаблон '.env.example' со всеми переменными окружения.
+- Файл '.env' добавлен в '.gitignore' для защиты конфиденциальных данных.
+
+2.8. Документация REST API
+- Создан документ 'docs/api_endpoints.md', включающий описание всех 38 REST-эндпоинтов
+  по категориям:
+  * /api/auth (Авторизация, токены, сброс паролей)
+  * /api/account (Профиль абонента, смена телефона/email, подтверждения SMS, учетные записи)
+  * /api/home (Тарифная сетка, смены тарифов, MAC-адреса, услуги Usbox, статистика трафика)
+  * /api/payment (Обещанные платежи, рекомендуемая сумма, платежи, счета, списания)
+  * /api/block (Добровольные блокировки)
+  * /api/post (Рассылки и сообщения)
+
+
+3. СПИСОК КОММИТОВ ЗА СЕГОДНЯ (ВЕТКА refactor_plan_b)
+--------------------------------------------------------------------------------
+1. 36f8289 - feat(refactor): execute Plan B - typed CXF SOAP client, stateless JWT,
+             coroutines, and clean architecture
+2. 8156d79 - fix(startup): fix idea entry point, default properties and idea module source dirs
+3. 80573f3 - fix(gradle): add buildscript classpath, explicit import and generated source roots for idea
+4. def9825 - fix(auth): handle timeout and communication errors, add login aliases and informative exception handling
+5. aefd838 - fix(soap): handle WebServiceException wrapped SoapFault and normalize authentication errors
+6. c14f57d - fix(web): add kotlinx-coroutines-reactor and reactor-core for Spring MVC suspend controllers
+7. 2b06013 - docs: add REST API endpoints documentation and remove base.url from prod profile
+8. 871a79f - fix(config): add env placeholders with safe defaults, add .env.example, and ignore .env
+
+
+4. ТЕКУЩЕЕ СОСТОЯНИЕ ПРОЕКТА
+--------------------------------------------------------------------------------
+- Сборка: Успешно (Gradle 9.4.0, JDK 21). Команда '.\gradlew.bat test' отрабатывает без ошибок.
+- Рабочая копия Git: Полностью чистая (working tree clean), все изменения закоммичены.
+- Документация:
+  * docs/api_endpoints.md - документация REST API.
+  * docs/wsdl_lanbilling_api.md - полная карта операций WSDL LanBilling (750 операций).
+  * .env.example - шаблон переменных окружения.
+================================================================================
