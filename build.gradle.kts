@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "4.0.4"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("io.mateo.cxf-codegen") version "2.4.0"
+	id("idea")
 }
 
 group = "com.impuls.billing"
@@ -88,5 +89,11 @@ tasks.withType<Test> {
 }
 
 tasks.test {
-	enabled = false
+	enabled = true
+}
+
+idea {
+	module {
+		generatedSourceDirs.add(file("build/lanbillingWsdl2Java-wsdl2java-generated-sources"))
+	}
 }
