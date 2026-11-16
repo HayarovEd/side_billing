@@ -1,41 +1,26 @@
 package com.impuls.billing.side_billing.config
 
-import org.springframework.http.HttpStatus
+import jakarta.servlet.FilterChain
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
-import org.springframework.web.server.ServerWebExchange
-import org.springframework.web.server.WebFilter
-import org.springframework.web.server.WebFilterChain
-import reactor.core.publisher.Mono
+import org.springframework.web.filter.OncePerRequestFilter
 
 @Component
-class LoggingFilter : WebFilter {
-    override fun filter(exchange: ServerWebExchange, chain: WebFilterChain): Mono<Void> {
-        val request = exchange.request
-        val response = exchange.response
+class LoggingFilter : OncePerRequestFilter() {
+    private val log = LoggerFactory.getLogger(LoggingFilter::class.java)
 
-        println("=== ВХОДЯЩИЙ ЗАПРОС ===")
-        println("Method: ${request.method}")
-        println("Path: ${request.path}")
-        println("Headers: ${request.headers}")
-
-        return chain.filter(exchange)
-            .doOnSuccess {
-                println("=== ИСХОДЯЩИЙ ОТВЕТ ===")
-                println("Status Code: ${response.statusCode}")
-                println("Headers: ${response.headers}")
-
-                // Если статус 401, печатаем стектрейс
-                if (response.statusCode == HttpStatus.UNAUTHORIZED) {
-                    println("!!! ОТВЕТ 401 UNAUTHORIZED !!!")
-                    Thread.currentThread().stackTrace.forEach {
-                        println("  at $it")
-                    }
-                }
-            }
-            .doOnError { error ->
-                println("=== ОШИБКА ===")
-                println("Error: ${error.message}")
-                error.printStackTrace()
-            }
+    override fun doFilterInternal(
+        request: HttpServletRequest,
+        response: HttpServletResponse,
+        filterChain: FilterChain
+    ) {
+        log.debug("=== INCOMING REQUEST: {} {} ===", request.method, request.requestURI)
+        try {
+            filterChain.doFilter(request, response)
+        } finally {
+            log.debug("=== OUTGOING RESPONSE: status {} ===", response.status)
+        }
     }
 }

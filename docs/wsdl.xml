@@ -1,7 +1,6 @@
 <definitions xmlns:tns="urn:api3" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="encoding.xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:lbapi="urn:api3" xmlns:SOAP="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:HTTP="http://schemas.xmlsoap.org/wsdl/http/" xmlns:MIME="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:DIME="http://schemas.xmlsoap.org/ws/2002/04/dime/wsdl/" xmlns:WSDL="http://schemas.xmlsoap.org/wsdl/" xmlns="http://schemas.xmlsoap.org/wsdl/" name="api3" targetNamespace="urn:api3">
 <types>
 <schema xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:SOAP-ENC="encoding.xml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:lbapi="urn:api3" xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="urn:api3" elementFormDefault="unqualified" attributeFormDefault="unqualified">
-<import namespace="encoding.xml" schemaLocation="encoding.xml"/>
 <simpleType name="connType">
 <!--  connType  -->
 <restriction base="xsd:string">

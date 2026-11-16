@@ -1,199 +1,149 @@
 package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
-import com.impuls.billing.side_billing.in_controller.HomeInternetBillingService
-import com.impuls.billing.side_billing.in_controller.PaymentBillingService
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
-import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
-import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
-import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
-import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
-import com.impuls.billing.side_billing.model.out_dto.dto.RecommendedPaymentDto
-import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
-import com.impuls.billing.side_billing.utils.convertToDate
-import com.impuls.billing.side_billing.utils.monoMapper
-import com.impuls.billing.side_billing.utils.parseFlexibleDate
-import com.impuls.billing.side_billing.utils.splitIntervalByMonths
+import com.impuls.billing.side_billing.model.out_dto.dto.*
+import com.impuls.billing.side_billing.soap.LanBillingClient
+import com.impuls.billing.side_billing.utils.*
+import com.impuls.billing.soap.generated.SoapFilter
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import reactor.core.publisher.Flux
-import reactor.core.publisher.Mono
 import java.time.format.DateTimeFormatter
 
 @Service
 class PaymentService(
     private val tokenService: TokenService,
-    private val paymentBillingService: PaymentBillingService,
-    private val homeInternetBillingService: HomeInternetBillingService
+    private val billingClient: LanBillingClient,
 ) {
 
-    fun getPPSettings(
-        authHeader: String,
-        agrmId: Long
-    ): Mono<PPSettingsDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                paymentBillingService.getPPSettings(
-                    sessionId = it.sessionId,
-                    agrmId = agrmId
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    private fun getSessionOrThrow(authHeader: String): String {
+        return tokenService.getSession(authHeader)?.sessionId
+            ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
-    fun getRecommendedPayment(
+    suspend fun getPPSettings(
+        authHeader: String,
+        agrmId: Long
+    ): PPSettingsDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val list = billingClient.execute(sessionId) {
+            getClientPPSettings(agrmId, "")
+        }
+        val first = list.firstOrNull()
+            ?: throw BillingException("PP settings not found", HttpStatus.NOT_FOUND)
+        return first.toPPSettings()
+    }
+
+    suspend fun getRecommendedPayment(
         authHeader: String,
         agrmId: Long,
         mode: Long?,
-    ): Mono<RecommendedPaymentDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = paymentBillingService.getRecommendedPayment(
-                    sessionId = it.sessionId,
-                    agrmId = agrmId,
-                    mode = mode,
-                )
-                result.map { rk->
-                    RecommendedPaymentDto(
-                        amount = rk
-                    )
-                }
-
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): RecommendedPaymentDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val amount = billingClient.execute(sessionId) {
+            getRecommendedPayment(agrmId, mode ?: 0L, "", false)
+        }
+        return RecommendedPaymentDto(amount = amount)
     }
 
-    @Transactional
-    fun addClientPromisePayment(
+    suspend fun addClientPromisePayment(
         authHeader: String,
         agreementId: Long,
         sum: Double,
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = paymentBillingService.addClientPromisePayment(
-                    sessionId = it.sessionId,
-                    agreementId = agreementId,
-                    sum = sum,
-                )
-                result.map { header ->
-                    ResultSuccessDto(header == 1L)
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            clientPromisePayment(agreementId, sum)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-    fun getClientPromisePayments(
+    suspend fun getClientPromisePayments(
         authHeader: String
-    ): Mono<List<PromisePaymentDto>> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                paymentBillingService.getClientPromisePayments(
-                    sessionId = it.sessionId,
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): List<PromisePaymentDto> {
+        val sessionId = getSessionOrThrow(authHeader)
+        val list = billingClient.execute(sessionId) {
+            getClientPromisePayments(SoapFilter())
+        }
+        return list.map { it.toPromisePaymentDto() }
     }
 
-    fun getClientPayments(
+    suspend fun getClientPayments(
         authHeader: String,
         agrmNum: String,
         dateTo: String,
         dateFrom: String,
-    ): Mono<List<ClientPayment>> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                paymentBillingService.getClientPayments(
-                    sessionId = it.sessionId,
-                    agrmNum = agrmNum,
-                    dateTo = dateTo,
-                    dateFrom = dateFrom,
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): List<ClientPayment> {
+        val sessionId = getSessionOrThrow(authHeader)
+        val flt = SoapFilter().apply {
+            if (agrmNum.isNotBlank()) this.agrmnum = agrmNum
+            if (dateFrom.isNotBlank()) this.dtfrom = dateFrom
+            if (dateTo.isNotBlank()) this.dtto = dateTo
+        }
+        val list = billingClient.execute(sessionId) {
+            getClientPayments(flt, emptyList())
+        }
+        return list.map { it.toClientPayment() }
     }
 
-    fun getClientOrders(
+    suspend fun getClientOrders(
         authHeader: String,
         payed: Long,
         dateTo: String,
         dateFrom: String,
-    ): Mono<List<OrderResponse>> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                paymentBillingService.getClientOrders(
-                    sessionId = it.sessionId,
-                    payed = payed,
-                    dateTo = dateTo,
-                    dateFrom = dateFrom,
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): List<OrderResponse> {
+        val sessionId = getSessionOrThrow(authHeader)
+        val flt = SoapFilter().apply {
+            this.payable = payed
+            if (dateFrom.isNotBlank()) this.dtfrom = dateFrom
+            if (dateTo.isNotBlank()) this.dtto = dateTo
+        }
+        val list = billingClient.execute(sessionId) {
+            getClientOrders(flt, emptyList())
+        }
+        return list.map { it.toOrderResponse() }
     }
 
-    fun getClientDebits(
+    suspend fun getClientDebits(
         authHeader: String,
         vgId: Long,
         armgId: Long,
         tarifId: Long,
         dateTo: String,
         dateFrom: String,
-    ): Mono<List<DebitDto>> {
-        val session = tokenService.getSession(authHeader)
+    ): List<DebitDto> {
+        val sessionId = getSessionOrThrow(authHeader)
         val start = parseFlexibleDate(dateFrom)
-        println(start)
         val end = parseFlexibleDate(dateTo)
-        return session?.let {
-            monoMapper({
-                val tariffHistory = homeInternetBillingService.getTarifsHistory(
-                    sessionId = it.sessionId,
-                    vgId = vgId
+
+        val flt = SoapFilter().apply { this.vgid = vgId }
+        val tariffHistory = billingClient.execute(sessionId) {
+            getTarifsHistory(flt)
+        }
+
+        val effectiveStart = if (tariffHistory.isNotEmpty()) {
+            val dateSetTariff = convertToDate(tariffHistory.first().changed ?: "")
+            if (dateSetTariff > start) dateSetTariff else start
+        } else {
+            start
+        }
+
+        val counts = splitIntervalByMonths(start = effectiveStart, end = end)
+        val resultList = mutableListOf<DebitDto>()
+
+        for (item in counts) {
+            val monthDateStr = "${item.yearMonth.year}-${item.yearMonth.month.value}-01"
+            val rent = billingClient.execute(sessionId) {
+                getRentAmount(vgId, tarifId, monthDateStr)
+            }
+            resultList.add(
+                DebitDto(
+                    yearMonth = item.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
+                    amount = item.days * rent
                 )
-                val dateSetTariff = tariffHistory.map { tarifs ->
-                    convertToDate(tarifs.first().changed)
-                }
-                val resultStart = dateSetTariff.map { sd ->
-                    if (sd > start) sd else start
-                }
+            )
+        }
 
-                val counts = resultStart.map { rs ->
-                    splitIntervalByMonths(
-                        start = rs,
-                        end = end,
-                    )
-                }
-                counts
-                        .flatMapMany { Flux.fromIterable(it).index() }
-                        .concatMap { ct ->
-                            println("date  ${ct.t2.yearMonth.month.value}")
-                            paymentBillingService.getRentAmount(
-                                sessionId = it.sessionId,
-                                armgId = armgId,
-                                tarifId = tarifId,
-                                monthDate = "${ct.t2.yearMonth.year}-${ct.t2.yearMonth.month.value}-01"
-                            ).map { result ->
-                                println("index ${ct.t1}")
-                                println("result $result")
-                                println("${ct.t2.days}")
-                                println("multiply ${ct.t2.days * result}")
-                                ct.t1 to DebitDto(
-                                    yearMonth = ct.t2.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
-                                    amount = ct.t2.days * result
-                                )
-                            }
-                        }
-                        .collectList()
-                        .map { list -> list.sortedBy { it.first }.map { it.second } }
-
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+        return resultList
     }
-
 }

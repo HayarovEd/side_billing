@@ -9,7 +9,6 @@ import com.impuls.billing.side_billing.model.out_dto.request.PasswordByCodeReque
 import com.impuls.billing.side_billing.model.out_dto.request.RecoverPasswordRequest
 import com.impuls.billing.side_billing.repository.AuthService
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/auth")
@@ -18,20 +17,19 @@ class AuthController(
 ) {
 
     @PostMapping("/login")
-    fun login(
+    suspend fun login(
         @RequestBody body: AuthRequest
-    ): Mono<TokenDto> {
+    ): TokenDto {
         return authService.onLogin(
             username = body.name,
             password = body.password
         )
     }
 
-
     @PostMapping("/recoverPassword")
-    fun recoverPassword(
+    suspend fun recoverPassword(
         @RequestBody body: RecoverPasswordRequest
-    ): Mono<RecoverPassword> {
+    ): RecoverPassword {
         return authService.recoverPassword(
             transport = body.transport,
             login = body.login,
@@ -42,9 +40,9 @@ class AuthController(
     }
 
     @PostMapping("/updatePasswordByCode")
-    fun updatePasswordByCode(
+    suspend fun updatePasswordByCode(
         @RequestBody body: PasswordByCodeRequest
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return authService.updatePasswordByCode(
             login = body.login,
             password = body.password,

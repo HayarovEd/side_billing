@@ -14,7 +14,6 @@ import com.impuls.billing.side_billing.model.out_dto.request.ValidationRequest
 import com.impuls.billing.side_billing.repository.AccountService
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.*
-import reactor.core.publisher.Mono
 
 @RestController
 @RequestMapping("/account")
@@ -23,100 +22,91 @@ class AccountController(
 ) {
 
     @GetMapping("/")
-    fun loggedUser(@RequestHeader("Authorization") authHeader: String): Mono<ClientAccount> {
-        return accountService
-            .getAccountData(authHeader)
-
+    suspend fun loggedUser(@RequestHeader("Authorization") authHeader: String): ClientAccount {
+        return accountService.getAccountData(authHeader)
     }
 
     @PostMapping("/clientMobilePhone")
-    fun setClientMobilePhone(
+    suspend fun setClientMobilePhone(
         @RequestHeader("Authorization") authHeader: String,
         @Valid @RequestBody body: PhoneUpdateRequest
-    ): Mono<ResultSuccessDto> {
-        return accountService
-            .setClientMobilePhone(
-                authHeader = authHeader,
-                uid = body.uid,
-                phone = body.phone,
-            )
+    ): ResultSuccessDto {
+        return accountService.setClientMobilePhone(
+            authHeader = authHeader,
+            uid = body.uid,
+            phone = body.phone,
+        )
     }
 
     @PostMapping("/clientEmail")
-    fun setClientEmail(
+    suspend fun setClientEmail(
         @RequestHeader("Authorization") authHeader: String,
         @Valid @RequestBody body: EmailUpdateRequest
-    ): Mono<ResultSuccessDto> {
-        return accountService
-            .setClientEmail(
-                authHeader = authHeader,
-                uid = body.uid,
-                email = body.email,
-            )
+    ): ResultSuccessDto {
+        return accountService.setClientEmail(
+            authHeader = authHeader,
+            uid = body.uid,
+            email = body.email,
+        )
     }
 
     @PostMapping("/validationClientMobileNumber")
-    fun validateClientMobileNumber(
+    suspend fun validateClientMobileNumber(
         @RequestHeader("Authorization") authHeader: String,
-    ): Mono<ValidationDto> {
-        return accountService
-            .validateClientMobileNumber(
-                authHeader = authHeader,
-            )
+    ): ValidationDto {
+        return accountService.validateClientMobileNumber(
+            authHeader = authHeader,
+        )
     }
 
     @PostMapping("/validationClientEmail")
-    fun validateClientEmail(
+    suspend fun validateClientEmail(
         @RequestHeader("Authorization") authHeader: String,
-    ): Mono<ValidationDto> {
-        return accountService
-            .validateClientEmail(
-                authHeader = authHeader,
-            )
+    ): ValidationDto {
+        return accountService.validateClientEmail(
+            authHeader = authHeader,
+        )
     }
 
     @PostMapping("/confirmationClientMobileNumber")
-    fun confirmValidateClientMobileNumber(
+    suspend fun confirmValidateClientMobileNumber(
         @RequestHeader("Authorization") authHeader: String,
         @Valid @RequestBody body: ValidationRequest
-    ): Mono<ResultSuccessDto> {
-        return accountService
-            .confirmValidateClientMobileNumber(
-                authHeader = authHeader,
-                code = body.code,
-                id = body.id,
-            )
+    ): ResultSuccessDto {
+        return accountService.confirmValidateClientMobileNumber(
+            authHeader = authHeader,
+            code = body.code,
+            id = body.id,
+        )
     }
 
     @PostMapping("/confirmationClientEmail")
-    fun confirmValidateClientEmail(
+    suspend fun confirmValidateClientEmail(
         @RequestHeader("Authorization") authHeader: String,
         @Valid @RequestBody body: ValidationRequest
-    ): Mono<ResultSuccessDto> {
-        return accountService
-            .confirmValidateClientEmail(
-                authHeader = authHeader,
-                code = body.code,
-                id = body.id,
-            )
+    ): ResultSuccessDto {
+        return accountService.confirmValidateClientEmail(
+            authHeader = authHeader,
+            code = body.code,
+            id = body.id,
+        )
     }
 
     @DeleteMapping("/logout")
-    fun logout(
+    suspend fun logout(
         @RequestHeader("Authorization") authHeader: String,
-    ): Mono<ResultSuccessDto> {
-        return accountService
-            .logout(
-                authHeader = authHeader
-            )
+    ): ResultSuccessDto {
+        return accountService.logout(
+            authHeader = authHeader
+        )
     }
 
     @GetMapping("/vgroup")
-    fun getClientVgroups(
+    suspend fun getClientVgroups(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "agrmid", required = false) agrmNum: Long?,
         @RequestParam(name = "vgid", required = false) vgId: Long?,
-    ): Mono<List<ClientVgroupFullResponse>> {
+    ): List<ClientVgroupFullResponse> {
         return accountService.getClientVgroups(
             authHeader = authHeader,
             agrmid = agrmNum,
@@ -125,22 +115,21 @@ class AccountController(
     }
 
     @GetMapping("/vgroupPassword")
-    fun getClientVgroupPassword(
+    suspend fun getClientVgroupPassword(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgid", required = true) vgId: Long,
-    ): Mono<PasswordResponse> {
+    ): PasswordResponse {
         return accountService.getClientVgroupPassword(
             authHeader = authHeader,
             vgId = vgId
         )
     }
 
-
     @PostMapping("/password")
-    fun updateClientPassword(
+    suspend fun updateClientPassword(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: UpdatePasswordRequest
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return accountService.updateClientPassword(
             authHeader = authHeader,
             oldPassword = body.oldPassword,
@@ -148,21 +137,20 @@ class AccountController(
         )
     }
 
-
     @GetMapping("/info")
-    fun getClientInfo(
+    suspend fun getClientInfo(
         @RequestHeader("Authorization") authHeader: String
-    ): Mono<ClientInfoResponse> {
+    ): ClientInfoResponse {
         return accountService.getClientInfo(
             authHeader = authHeader,
         )
     }
 
     @GetMapping("/notices")
-    fun getAccountNotices(
+    suspend fun getAccountNotices(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "userid", required = true) uid: Long,
-    ): Mono<AccountNoticeResponse> {
+    ): AccountNoticeResponse {
         return accountService.getAccountNotices(
             authHeader = authHeader,
             uid = uid
@@ -170,14 +158,13 @@ class AccountController(
     }
 
     @PostMapping("/notices")
-    fun setAccountNotices(
+    suspend fun setAccountNotices(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: AccountNoticeResponse
-    ): Mono<Long> {
+    ): Long {
         return accountService.setAccountNotices(
             authHeader = authHeader,
             accountNoticeResponse = body
         )
     }
-
 }

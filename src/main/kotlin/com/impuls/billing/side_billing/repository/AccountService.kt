@@ -1,8 +1,6 @@
 package com.impuls.billing.side_billing.repository
 
 import com.impuls.billing.side_billing.exception.BillingException
-import com.impuls.billing.side_billing.in_controller.AccountBillingService
-import com.impuls.billing.side_billing.in_controller.AuthBillingService
 import com.impuls.billing.side_billing.model.in_dto.ClientInfoResponse
 import com.impuls.billing.side_billing.model.in_dto.PasswordResponse
 import com.impuls.billing.side_billing.model.in_dto.client_vgroup.ClientVgroupFullResponse
@@ -10,280 +8,203 @@ import com.impuls.billing.side_billing.model.in_dto.notices.AccountNoticeRespons
 import com.impuls.billing.side_billing.model.out_dto.dto.ClientAccount
 import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.model.out_dto.dto.ValidationDto
-import com.impuls.billing.side_billing.utils.monoMapper
+import com.impuls.billing.side_billing.soap.LanBillingClient
+import com.impuls.billing.side_billing.utils.*
+import com.impuls.billing.soap.generated.*
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import reactor.core.publisher.Mono
 
 @Service
 class AccountService(
-    private val authBillingService: AuthBillingService,
     private val tokenService: TokenService,
-    private val accountBillingService: AccountBillingService,
+    private val billingClient: LanBillingClient,
 ) {
 
-    fun getAccountData(authHeader: String): Mono<ClientAccount> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({ authBillingService.getClientAccount(session.sessionId) })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    private fun getSessionOrThrow(authHeader: String): String {
+        return tokenService.getSession(authHeader)?.sessionId
+            ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
     }
 
-    @Transactional
-    fun setClientMobilePhone(
+    suspend fun getAccountData(authHeader: String): ClientAccount {
+        val sessionId = getSessionOrThrow(authHeader)
+        val accounts = billingClient.execute(sessionId) {
+            getClientAccount(SoapGetAccountFilter())
+        }
+        val firstAccount = accounts.firstOrNull()
+            ?: throw BillingException("Account not found", HttpStatus.NOT_FOUND)
+        return firstAccount.toClientAccount()
+    }
+
+    suspend fun setClientMobilePhone(
         authHeader: String,
         uid: Long,
         phone: String,
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.setClientMobilePhone(
-                    sessionId = it.sessionId,
-                    uid = uid,
-                    phone = phone,
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ResultSuccessDto(header == 1L)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val info = SoapClientInfo().apply {
+            this.userid = uid
+            this.mobile = phone
+        }
+        val res = billingClient.execute(sessionId) {
+            setClientInfo(info)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-    @Transactional
-    fun setClientEmail(
+    suspend fun setClientEmail(
         authHeader: String,
         uid: Long,
         email: String,
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.setClientEmail(
-                    sessionId = it.sessionId,
-                    uid = uid,
-                    email = email,
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ResultSuccessDto(header == 1L)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val info = SoapClientInfo().apply {
+            this.userid = uid
+            this.email = email
+        }
+        val res = billingClient.execute(sessionId) {
+            setClientInfo(info)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-    fun validateClientMobileNumber(
-        authHeader: String,
-    ): Mono<ValidationDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.validateClientMobileNumber(
-                    sessionId = it.sessionId,
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ValidationDto(recordNumber = header)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    suspend fun validateClientMobileNumber(authHeader: String): ValidationDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            validateClientMobileNumber()
+        }
+        return ValidationDto(recordNumber = res)
     }
 
-    fun validateClientEmail(
-        authHeader: String,
-    ): Mono<ValidationDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.validateClientEmail(
-                    sessionId = it.sessionId,
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ValidationDto(recordNumber = header)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    suspend fun validateClientEmail(authHeader: String): ValidationDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            validateClientEmail()
+        }
+        return ValidationDto(recordNumber = res)
     }
 
-    @Transactional
-    fun confirmValidateClientMobileNumber(
+    suspend fun confirmValidateClientMobileNumber(
         authHeader: String,
         code: String,
         id: Long
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.confirmValidateClientMobileNumber(
-                    sessionId = it.sessionId,
-                    code = code,
-                    id = id
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ResultSuccessDto(header == 1L)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            confirmValidateClientMobileNumber(id, code)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-    @Transactional
-    fun confirmValidateClientEmail(
+    suspend fun confirmValidateClientEmail(
         authHeader: String,
         code: String,
         id: Long
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                val result = accountBillingService.confirmValidateClientEmail(
-                    sessionId = it.sessionId,
-                    code = code,
-                    id = id
-                )
-                result.map { header ->
-                    when (header) {
-                        else -> {
-                            ResultSuccessDto(header == 1L)
-                        }
-                    }
-                }
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            confirmValidateClientEmail(id, code)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-
-    @Transactional
-    fun logout(
-        authHeader: String,
-    ): Mono<ResultSuccessDto> {
+    suspend fun logout(authHeader: String): ResultSuccessDto {
         val session = tokenService.getSession(authHeader)
-        return session?.let {
-            accountBillingService.logout(sessionId = session.sessionId)
-                .map { header ->
-                    tokenService.deleteSession(session) // Синхронное удаление
-                    ResultSuccessDto(header == 1L)
-                }
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+        return if (session != null) {
+            try {
+                val res = billingClient.execute(session.sessionId) { logout() }
+                tokenService.deleteSession(session)
+                ResultSuccessDto(res == 1L)
+            } catch (e: Exception) {
+                ResultSuccessDto(true)
+            }
+        } else {
+            ResultSuccessDto(true)
+        }
     }
 
-
-    fun getClientVgroups(
+    suspend fun getClientVgroups(
         authHeader: String,
         agrmid: Long?,
         vgId: Long?,
-    ): Mono<List<ClientVgroupFullResponse>> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                accountBillingService.getClientVgroups(
-                    sessionId = it.sessionId,
-                    agrmid = agrmid,
-                    vgId = vgId,
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): List<ClientVgroupFullResponse> {
+        val sessionId = getSessionOrThrow(authHeader)
+        val flt = SoapFilter().apply {
+            if (agrmid != null) this.agrmid = agrmid
+            if (vgId != null) this.vgid = vgId
+        }
+        val vgroups = billingClient.execute(sessionId) {
+            getClientVgroups(flt)
+        }
+        return vgroups.map { it.toClientVgroupFull() }
     }
 
-    fun getClientVgroupPassword(
+    suspend fun getClientVgroupPassword(
         authHeader: String,
         vgId: Long,
-    ): Mono<PasswordResponse> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            monoMapper({
-                accountBillingService.getClientVgroupPassword(
-                    sessionId = it.sessionId,
-                    vgId = vgId,
-                )
-            })
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): PasswordResponse {
+        val sessionId = getSessionOrThrow(authHeader)
+        val pass = billingClient.execute(sessionId) {
+            getClientVgroupPassword(vgId)
+        }
+        return PasswordResponse(password = pass ?: "")
     }
 
-
-    fun updateClientPassword(
+    suspend fun updateClientPassword(
         authHeader: String,
-        newPassword: String,
         oldPassword: String,
-    ): Mono<ResultSuccessDto> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            val result = monoMapper({
-                accountBillingService.updateClientPassword(
-                    sessionId = it.sessionId,
-                    oldPassword = oldPassword,
-                    newPassword = newPassword
-                )
-            })
-            result.map { header ->
-                ResultSuccessDto(header == 1L)
-            }
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+        newPassword: String,
+    ): ResultSuccessDto {
+        val sessionId = getSessionOrThrow(authHeader)
+        val res = billingClient.execute(sessionId) {
+            updClientPass(null, oldPassword, newPassword)
+        }
+        return ResultSuccessDto(res == 1L)
     }
 
-
-    fun getClientInfo(
-        authHeader: String,
-    ): Mono<ClientInfoResponse> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            val result = monoMapper({
-                accountBillingService.getClientInfo(
-                    sessionId = it.sessionId,
-                )
-            })
-            result
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    suspend fun getClientInfo(authHeader: String): ClientInfoResponse {
+        val sessionId = getSessionOrThrow(authHeader)
+        val infoList = billingClient.execute(sessionId) {
+            getClientInfo(SoapFilter())
+        }
+        val info = infoList.firstOrNull()
+            ?: throw BillingException("Client info not found", HttpStatus.NOT_FOUND)
+        return info.toClientInfoResponse()
     }
 
-    fun getAccountNotices(
+    suspend fun getAccountNotices(
         authHeader: String,
         uid: Long,
-    ): Mono<AccountNoticeResponse> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            val result = monoMapper({
-                accountBillingService.getAccountNotices(
-                    sessionId = it.sessionId,
-                    uid = uid
-                )
-            })
-            result
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+    ): AccountNoticeResponse {
+        val sessionId = getSessionOrThrow(authHeader)
+        val flt = SoapFilter().apply { this.userid = uid }
+        val notices = billingClient.execute(sessionId) {
+            getAccountNotices(flt)
+        }
+        val first = notices.firstOrNull()
+        return first?.toAccountNoticeResponse() ?: AccountNoticeResponse(uid = uid, notices = emptyList())
     }
 
-    fun setAccountNotices(
+    suspend fun setAccountNotices(
         authHeader: String,
-        accountNoticeResponse: AccountNoticeResponse
-    ): Mono<Long> {
-        val session = tokenService.getSession(authHeader)
-        return session?.let {
-            val result = monoMapper({
-                accountBillingService.setAccountNotices(
-                    sessionId = it.sessionId,
-                    accountNoticeResponse = accountNoticeResponse
-                )
+        accountNoticeResponse: AccountNoticeResponse,
+    ): Long {
+        val sessionId = getSessionOrThrow(authHeader)
+        val an = SoapAccountNotices().apply {
+            this.uid = accountNoticeResponse.uid
+            this.notices.addAll(accountNoticeResponse.notices.map {
+                SoapAccountNotice().apply {
+                    this.type = it.type
+                    this.isemail = if (it.isEmail) 1L else 0L
+                    this.issms = if (it.isSms) 1L else 0L
+                    this.ismessenger = if (it.isMessenger) 1L else 0L
+                    this.name = it.name
+                    this.descr = it.descr
+                    this.value = it.value
+                }
             })
-            result
-        } ?: throw BillingException("Session not found", HttpStatus.UNAUTHORIZED)
+        }
+        return billingClient.execute(sessionId) {
+            setAccountNotices(an)
+        }
     }
-
 }

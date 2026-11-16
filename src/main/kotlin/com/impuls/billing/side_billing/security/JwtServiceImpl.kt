@@ -12,14 +12,15 @@ import java.util.Date
 
 @Service
 class JwtServiceImpl(
-    @Value("\${jwt.secret}") private val jwtSecret: String
+    @Value("\${jwt.secret}") private val jwtSecret: String,
+    @Value("\${jwt.expiration:7200000}") private val jwtExpirationMs: Long
 ): JwtService {
 
     private val secretKey = Keys.hmacShaKeyFor(Base64.getDecoder().decode(jwtSecret))
-    private val accessTokenValidityMs = 2 * 60L * 60L * 1000L
 
     private fun generateToken(
         userId: String,
+        sessionId: String,
         type: String,
         expiry: Long
     ): String {
@@ -27,6 +28,7 @@ class JwtServiceImpl(
         val expiryDate = Date(now.time + expiry)
         return Jwts.builder()
             .subject(userId)
+            .claim("sid", sessionId)
             .claim("type", type)
             .issuedAt(now)
             .expiration(expiryDate)
@@ -34,8 +36,8 @@ class JwtServiceImpl(
             .compact()
     }
 
-    override fun generateAccessToken(userId: String): String {
-        return generateToken(userId, "access", accessTokenValidityMs)
+    override fun generateAccessToken(userId: String, sessionId: String): String {
+        return generateToken(userId, sessionId, "access", jwtExpirationMs)
     }
 
     override fun validateAccessToken(token: String): Boolean {
@@ -52,10 +54,21 @@ class JwtServiceImpl(
         return claims.subject
     }
 
+    override fun getSessionIdFromToken(token: String): String {
+        val claims = parseAllClaims(token) ?: throw ResponseStatusException(
+            HttpStatusCode.valueOf(401),
+            "Invalid token."
+        )
+        return claims["sid"] as? String ?: throw ResponseStatusException(
+            HttpStatusCode.valueOf(401),
+            "Invalid token session."
+        )
+    }
+
     private fun parseAllClaims(token: String): Claims? {
         val rawToken = if (token.startsWith("Bearer ")) {
-            token.removePrefix("Bearer ")
-        } else token
+            token.removePrefix("Bearer ").trim()
+        } else token.trim()
         return try {
             Jwts.parser()
                 .verifyWith(secretKey)

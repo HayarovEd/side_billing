@@ -4,28 +4,12 @@ import com.impuls.billing.side_billing.model.in_dto.ClientIpStat
 import com.impuls.billing.side_billing.model.in_dto.ClientShortStat
 import com.impuls.billing.side_billing.model.in_dto.ClientTarifStat
 import com.impuls.billing.side_billing.model.in_dto.usbox_service.UsboxServiceFull
-import com.impuls.billing.side_billing.model.out_dto.dto.AvailableServiceDto
-import com.impuls.billing.side_billing.model.out_dto.dto.MacStaffDto
-import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
-import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessLongDto
-import com.impuls.billing.side_billing.model.out_dto.dto.TarifFullDto
-import com.impuls.billing.side_billing.model.out_dto.dto.TarifsHistoryDto
-import com.impuls.billing.side_billing.model.out_dto.dto.TarifsStaffDto
+import com.impuls.billing.side_billing.model.out_dto.dto.*
 import com.impuls.billing.side_billing.model.out_dto.request.MacRequest
 import com.impuls.billing.side_billing.model.out_dto.request.RaspRequest
 import com.impuls.billing.side_billing.model.out_dto.request.UsboxServiceRequest
 import com.impuls.billing.side_billing.repository.HomeInternetService
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.Mono
-
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/home")
@@ -34,13 +18,13 @@ class HomeInternetController(
 ) {
 
     @GetMapping("/tariff")
-    fun getTarifsStaff(
+    suspend fun getTarifsStaff(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "groupid", required = false) groupId: Long?,
         @RequestParam(name = "grouptarid", required = false) groupTarId: Long?,
         @RequestParam(name = "groupmoduleid", required = false) groupModuleId: Long?,
         @RequestParam(name = "tarid", required = false) tarId: Long?,
-    ): Mono<List<TarifsStaffDto>> {
+    ): List<TarifsStaffDto> {
         return homeInternetService.getTarifsStaff(
             authHeader = authHeader,
             groupId = groupId,
@@ -51,10 +35,10 @@ class HomeInternetController(
     }
 
     @GetMapping("/tariff/history")
-    fun getTarifsHistory(
+    suspend fun getTarifsHistory(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgid", required = false) vgId: Long?,
-    ): Mono<List<TarifsHistoryDto>> {
+    ): List<TarifsHistoryDto> {
         return homeInternetService.getTarifsHistory(
             authHeader = authHeader,
             vgId = vgId,
@@ -62,10 +46,10 @@ class HomeInternetController(
     }
 
     @GetMapping("/tariff/{id}")
-    fun getTariff(
+    suspend fun getTariff(
         @RequestHeader("Authorization") authHeader: String,
         @PathVariable("id") id: Long,
-    ): Mono<TarifFullDto> {
+    ): TarifFullDto {
         return homeInternetService.getTariff(
             authHeader = authHeader,
             id = id
@@ -73,10 +57,10 @@ class HomeInternetController(
     }
 
     @PostMapping("/tariff/rasp")
-    fun insertClientTarifsRasp(
+    suspend fun insertClientTarifsRasp(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: RaspRequest
-    ): Mono<Long> {
+    ): Long {
         return homeInternetService.insertClientTarifsRasp(
             authHeader = authHeader,
             vgId = body.vgId,
@@ -85,10 +69,10 @@ class HomeInternetController(
     }
 
     @DeleteMapping("/tariff/rasp/{id}")
-    fun deleteClientTarifsRasp(
+    suspend fun deleteClientTarifsRasp(
         @RequestHeader("Authorization") authHeader: String,
         @PathVariable("id") id: Long,
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return homeInternetService.deleteClientTarifsRasp(
             authHeader = authHeader,
             id = id
@@ -96,22 +80,21 @@ class HomeInternetController(
     }
 
     @GetMapping("/mac")
-    fun getMacStaff(
+    suspend fun getMacStaff(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "id", required = true) id: Long,
-    ): Mono<List<MacStaffDto>> {
+    ): List<MacStaffDto> {
         return homeInternetService.getMacStaff(
             authHeader = authHeader,
             id = id,
         )
     }
 
-
     @PostMapping("/mac")
-    fun insertMacStaff(
+    suspend fun insertMacStaff(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: MacRequest
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return homeInternetService.insertMacStaff(
             authHeader = authHeader,
             id = body.id,
@@ -120,10 +103,10 @@ class HomeInternetController(
     }
 
     @GetMapping("/availableService")
-    fun getAvailableServicesForVgroup(
+    suspend fun getAvailableServicesForVgroup(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgId", required = true) vgId: Long,
-    ): Mono<List<AvailableServiceDto>> {
+    ): List<AvailableServiceDto> {
         return homeInternetService.getAvailableServicesForVgroup(
             authHeader = authHeader,
             vgId = vgId,
@@ -131,10 +114,10 @@ class HomeInternetController(
     }
 
     @PostMapping("/service")
-    fun insertClientUsboxService(
+    suspend fun insertClientUsboxService(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: UsboxServiceRequest
-    ): Mono<ResultSuccessLongDto> {
+    ): ResultSuccessLongDto {
         return homeInternetService.insertClientUsboxService(
             authHeader = authHeader,
             vgId = body.vgId,
@@ -146,10 +129,10 @@ class HomeInternetController(
     }
 
     @GetMapping("/service")
-    fun getUsboxServices(
+    suspend fun getUsboxServices(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgId", required = true) vgId: Long,
-    ): Mono<List<UsboxServiceFull>> {
+    ): List<UsboxServiceFull> {
         return homeInternetService.getUsboxServices(
             authHeader = authHeader,
             vgId = vgId,
@@ -157,10 +140,10 @@ class HomeInternetController(
     }
 
     @DeleteMapping("/service/{id}")
-    fun deleteUsboxService(
+    suspend fun deleteUsboxService(
         @RequestHeader("Authorization") authHeader: String,
         @PathVariable("id") id: Long,
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return homeInternetService.deleteUsboxService(
             authHeader = authHeader,
             servId = id,
@@ -169,13 +152,13 @@ class HomeInternetController(
     }
 
     @GetMapping("/short_statistics")
-    fun getClientStatByTimePeriod(
+    suspend fun getClientStatByTimePeriod(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgId", required = true) vgId: Long,
-        @RequestParam(name = "repDetail", required = true) repDetail: Long, //Вид детализации (единица времени): 1 — по дням, 2 — по часам, 3— по месяцам, 0 — весь период
+        @RequestParam(name = "repDetail", required = true) repDetail: Long,
         @RequestParam(name = "dtFrom", required = true) dtFrom: String,
         @RequestParam(name = "dtTo", required = true) dtTo: String,
-    ): Mono<List<ClientShortStat>> {
+    ): List<ClientShortStat> {
         return homeInternetService.getClientStatByTimePeriod(
             authHeader = authHeader,
             vgId = vgId,
@@ -186,12 +169,12 @@ class HomeInternetController(
     }
 
     @GetMapping("/tarifStatistics")
-    fun getClientTarifStatByTimePeriod(
+    suspend fun getClientTarifStatByTimePeriod(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgId", required = true) vgId: Long,
         @RequestParam(name = "dtFrom", required = true) dtFrom: String,
         @RequestParam(name = "dtTo", required = true) dtTo: String,
-    ): Mono<List<ClientTarifStat>> {
+    ): List<ClientTarifStat> {
         return homeInternetService.getClientTarifStatByTimePeriod(
             authHeader = authHeader,
             vgId = vgId,
@@ -202,12 +185,12 @@ class HomeInternetController(
     }
 
     @GetMapping("/ipStatistics")
-    fun getClientIpStatByTimePeriod(
+    suspend fun getClientIpStatByTimePeriod(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgId", required = true) vgId: Long,
         @RequestParam(name = "dtFrom", required = true) dtFrom: String,
         @RequestParam(name = "dtTo", required = true) dtTo: String,
-    ): Mono<List<ClientIpStat>> {
+    ): List<ClientIpStat> {
         return homeInternetService.getClientIpStatByTimePeriod(
             authHeader = authHeader,
             vgId = vgId,
@@ -216,5 +199,4 @@ class HomeInternetController(
             dtTo = dtTo
         )
     }
-
 }

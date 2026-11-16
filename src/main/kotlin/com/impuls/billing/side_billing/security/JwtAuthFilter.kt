@@ -4,6 +4,7 @@ import com.impuls.billing.side_billing.utils.BEARER_PREF
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.slf4j.LoggerFactory
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Component
@@ -14,12 +15,19 @@ class JwtAuthFilter(
     private val jwtService: JwtService,
 ) : OncePerRequestFilter() {
 
+    private val log = LoggerFactory.getLogger(JwtAuthFilter::class.java)
 
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
+        // Пропускаем CORS preflight OPTIONS запросы
+        if ("OPTIONS".equals(request.method, ignoreCase = true)) {
+            filterChain.doFilter(request, response)
+            return
+        }
+
         val path = request.servletPath
 
         // Пропускаем публичные пути
@@ -28,17 +36,17 @@ class JwtAuthFilter(
             path.startsWith("/v3/api-docs") ||
             path.startsWith("/swagger-resources") ||
             path.startsWith("/webjars")) {
-            println("Публичный путь: $path, пропускаем")
             filterChain.doFilter(request, response)
             return
         }
 
         val authHeader = request.getHeader("Authorization")
-        println("Проверка токена для: $path")
 
         if (authHeader == null || !authHeader.startsWith(BEARER_PREF)) {
-            println("Отсутствует Authorization header")
+            log.warn("Missing or invalid Authorization header for path: {}", path)
             response.status = HttpServletResponse.SC_UNAUTHORIZED
+            response.contentType = "application/json"
+            response.writer.write("""{"error": "Unauthorized: missing token"}""")
             return
         }
 
@@ -46,19 +54,19 @@ class JwtAuthFilter(
             if (jwtService.validateAccessToken(authHeader)) {
                 val userId = jwtService.getUserIdFromToken(authHeader)
                 val authentication = UsernamePasswordAuthenticationToken(userId, null, emptyList())
-
-                // Устанавливаем в SecurityContextHolder
                 SecurityContextHolder.getContext().authentication = authentication
-
-                println("Аутентификация установлена для: $userId")
                 filterChain.doFilter(request, response)
             } else {
-                println("Невалидный токен")
+                log.warn("Invalid token for path: {}", path)
                 response.status = HttpServletResponse.SC_UNAUTHORIZED
+                response.contentType = "application/json"
+                response.writer.write("""{"error": "Unauthorized: invalid token"}""")
             }
         } catch (e: Exception) {
-            println("Ошибка: ${e.message}")
+            log.error("Authentication error for path {}: {}", path, e.message)
             response.status = HttpServletResponse.SC_UNAUTHORIZED
+            response.contentType = "application/json"
+            response.writer.write("""{"error": "Unauthorized: ${e.message}"}""")
         }
     }
 }

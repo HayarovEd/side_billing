@@ -1,22 +1,10 @@
 package com.impuls.billing.side_billing.out_controller
 
 import com.impuls.billing.side_billing.model.in_dto.OrderResponse
-import com.impuls.billing.side_billing.model.out_dto.dto.PPSettingsDto
-import com.impuls.billing.side_billing.model.out_dto.dto.ClientPayment
-import com.impuls.billing.side_billing.model.out_dto.dto.DebitDto
-import com.impuls.billing.side_billing.model.out_dto.dto.PromisePaymentDto
-import com.impuls.billing.side_billing.model.out_dto.dto.RecommendedPaymentDto
+import com.impuls.billing.side_billing.model.out_dto.dto.*
 import com.impuls.billing.side_billing.model.out_dto.request.PromisePaymentRequest
-import com.impuls.billing.side_billing.model.out_dto.dto.ResultSuccessDto
 import com.impuls.billing.side_billing.repository.PaymentService
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
-import reactor.core.publisher.Mono
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/payment")
@@ -25,10 +13,10 @@ class PaymentController(
 ) {
 
     @GetMapping("/ppSettings")
-    fun getPPSettings(
+    suspend fun getPPSettings(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "agrm_id", required = true) agrmId: Long,
-    ): Mono<PPSettingsDto> {
+    ): PPSettingsDto {
         return paymentService.getPPSettings(
             authHeader = authHeader,
             agrmId = agrmId
@@ -36,11 +24,11 @@ class PaymentController(
     }
 
     @GetMapping("/recommended")
-    fun getRecommendedPayment(
+    suspend fun getRecommendedPayment(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "agrm_id", required = true) agrmId: Long,
         @RequestParam(name = "mode", required = false) mode: Long?,
-    ): Mono<RecommendedPaymentDto> {
+    ): RecommendedPaymentDto {
         return paymentService.getRecommendedPayment(
             authHeader = authHeader,
             agrmId = agrmId,
@@ -48,12 +36,11 @@ class PaymentController(
         )
     }
 
-
     @PostMapping("/promisePayment")
-    fun addClientPromisePayment(
+    suspend fun addClientPromisePayment(
         @RequestHeader("Authorization") authHeader: String,
         @RequestBody body: PromisePaymentRequest
-    ): Mono<ResultSuccessDto> {
+    ): ResultSuccessDto {
         return paymentService.addClientPromisePayment(
             authHeader = authHeader,
             agreementId = body.agreementId,
@@ -62,21 +49,21 @@ class PaymentController(
     }
 
     @GetMapping("/promisePayment")
-    fun getClientPromisePayments(
+    suspend fun getClientPromisePayments(
         @RequestHeader("Authorization") authHeader: String,
-    ): Mono<List<PromisePaymentDto>> {
+    ): List<PromisePaymentDto> {
         return paymentService.getClientPromisePayments(
             authHeader = authHeader
         )
     }
 
     @GetMapping("/payment")
-    fun getClientPayments(
+    suspend fun getClientPayments(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "agrmnum", defaultValue = "", required = false) agrmNum: String,
         @RequestParam(name = "dtto", defaultValue = "", required = false) dateTo: String,
         @RequestParam(name = "dtfrom", defaultValue = "", required = false) dateFrom: String,
-    ): Mono<List<ClientPayment>> {
+    ): List<ClientPayment> {
         return paymentService.getClientPayments(
             authHeader = authHeader,
             agrmNum = agrmNum,
@@ -86,12 +73,12 @@ class PaymentController(
     }
 
     @GetMapping("/order")
-    fun getClientOrders(
+    suspend fun getClientOrders(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "payed", required = true) payed: Long,
         @RequestParam(name = "dtto", required = true) dateTo: String,
         @RequestParam(name = "dtfrom", required = true) dateFrom: String,
-    ): Mono<List<OrderResponse>> {
+    ): List<OrderResponse> {
         return paymentService.getClientOrders(
             authHeader = authHeader,
             payed = payed,
@@ -101,22 +88,23 @@ class PaymentController(
     }
 
     @GetMapping("/debits")
-    fun getClientDebits(
+    suspend fun getClientDebits(
         @RequestHeader("Authorization") authHeader: String,
         @RequestParam(name = "vgid", required = true) vgId: Long,
-        @RequestParam(name = "armgid", required = true) armgId: Long,
+        @RequestParam(name = "agrmid", required = false) agrmIdParam: Long?,
+        @RequestParam(name = "armgid", required = false) armgIdLegacy: Long?,
         @RequestParam(name = "tarifid", required = true) tarifId: Long,
         @RequestParam(name = "dtto", required = true) dateTo: String,
         @RequestParam(name = "dtfrom", required = true) dateFrom: String,
-    ): Mono<List<DebitDto>> {
+    ): List<DebitDto> {
+        val effectiveAgrmId = agrmIdParam ?: armgIdLegacy ?: 0L
         return paymentService.getClientDebits(
             authHeader = authHeader,
             dateTo = dateTo,
             dateFrom = dateFrom,
             vgId = vgId,
             tarifId = tarifId,
-            armgId = armgId
+            armgId = effectiveAgrmId
         )
     }
-
 }
