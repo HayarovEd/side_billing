@@ -22,7 +22,10 @@ class LanBillingClient(
         val bp = port as BindingProvider
         bp.requestContext["thread.local.request.context"] = "true"
         if (!sessionId.isNullOrBlank()) {
-            bp.requestContext[MessageContext.HTTP_REQUEST_HEADERS] = mapOf("Cookie" to listOf(sessionId))
+            bp.requestContext[MessageContext.HTTP_REQUEST_HEADERS] = mapOf(
+                "Cookie" to listOf(sessionId),
+                "Set-Cookie" to listOf(sessionId)
+            )
         } else {
             bp.requestContext.remove(MessageContext.HTTP_REQUEST_HEADERS)
         }
@@ -43,7 +46,13 @@ class LanBillingClient(
             throw e
         } catch (e: Exception) {
             log.error("Billing communication error", e)
-            throw BillingException(e.message ?: "Billing communication error", HttpStatus.BAD_GATEWAY)
+            val msg = e.message ?: "Billing communication error"
+            val status = if (msg.contains("timed out", ignoreCase = true) || msg.contains("Timeout", ignoreCase = true)) {
+                HttpStatus.GATEWAY_TIMEOUT
+            } else {
+                HttpStatus.BAD_GATEWAY
+            }
+            throw BillingException(msg, status)
         }
     }
 
@@ -54,19 +63,37 @@ class LanBillingClient(
 
         val result: List<SoapClientLogin>
         try {
-            result = port.clientLogin(0L, username, pass, "")
+            result = port.clientLogin(null, username, pass, null)
         } catch (e: SOAPFaultException) {
             val msg = e.fault?.faultString ?: e.message ?: "Invalid login or password"
+            log.warn("SOAP fault during login for user {}: {}", username, msg)
             throw BillingException(msg, HttpStatus.UNAUTHORIZED)
+        } catch (e: BillingException) {
+            throw e
+        } catch (e: Exception) {
+            log.error("Error communicating with billing during login for user {}: {}", username, e.message, e)
+            val msg = e.message ?: "Billing communication error"
+            val status = if (msg.contains("timed out", ignoreCase = true) || msg.contains("Timeout", ignoreCase = true)) {
+                HttpStatus.GATEWAY_TIMEOUT
+            } else {
+                HttpStatus.BAD_GATEWAY
+            }
+            throw BillingException(msg, status)
         }
 
         val uid = result.firstOrNull()?.uid
             ?: throw BillingException("User not found", HttpStatus.UNAUTHORIZED)
 
         val respHeaders = bp.responseContext[MessageContext.HTTP_RESPONSE_HEADERS] as? Map<*, *>
-        val cookieList = (respHeaders?.get("Set-Cookie") ?: respHeaders?.get("set-cookie")) as? List<*>
-        val sessionId = cookieList?.firstOrNull()?.toString()
-            ?: throw BillingException("Session cookie not returned by billing", HttpStatus.UNAUTHORIZED)
+        val rawCookie = respHeaders?.entries
+            ?.firstOrNull { it.key.toString().equals("Set-Cookie", ignoreCase = true) }
+            ?.value
+
+        val sessionId = when (rawCookie) {
+            is List<*> -> rawCookie.firstOrNull()?.toString()
+            is String -> rawCookie
+            else -> null
+        } ?: throw BillingException("Session cookie not returned by billing", HttpStatus.UNAUTHORIZED)
 
         Pair(uid, sessionId)
     }
