@@ -130,7 +130,6 @@ class PaymentService(
 
         val counts = splitIntervalByMonths(start = effectiveStart, end = end)
         val resultList = mutableListOf<DebitDto>()
-
         for (item in counts) {
             val monthDateStr = "${item.yearMonth.year}-${item.yearMonth.month.value}-01"
             val rent = billingClient.execute(sessionId) {
@@ -139,7 +138,7 @@ class PaymentService(
             resultList.add(
                 DebitDto(
                     yearMonth = item.yearMonth.format(DateTimeFormatter.ofPattern("yyyy-MM")) + "-01",
-                    amount = item.days * rent
+                    amount = item.days * (rent/item.yearMonth.month.length(item.yearMonth.isLeapYear))
                 )
             )
         }
