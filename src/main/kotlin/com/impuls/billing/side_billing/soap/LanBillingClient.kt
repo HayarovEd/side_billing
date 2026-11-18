@@ -97,12 +97,19 @@ class LanBillingClient(
 
         if (faultString != null) {
             log.warn("SOAP fault for user '{}': {}", username ?: "unknown", faultString)
+
+            // Сессия в LanBilling протухла
+            if (faultString.contains("Session", ignoreCase = true)) {
+                throw BillingException("Session expired", HttpStatus.UNAUTHORIZED)
+            }
+
+            // Ошибка учетных данных при логине
             if (faultString.contains("Invalid login", ignoreCase = true) ||
-                faultString.contains("Session", ignoreCase = true) ||
                 faultString.contains("User not found", ignoreCase = true)
             ) {
                 throw BillingException("Invalid login or password", HttpStatus.UNAUTHORIZED)
             }
+
             throw BillingException(faultString, HttpStatus.BAD_REQUEST)
         }
 
